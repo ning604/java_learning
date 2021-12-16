@@ -1,0 +1,159 @@
+{
+  "main": {
+    "id": "2cb284eaa5db9519",
+    "type": "split",
+    "children": [
+      {
+        "id": "e8d8f02b02d002d8",
+        "type": "leaf",
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "java.md",
+            "mode": "source"
+          }
+        },
+        "group": "ae1bbaa849db9d6b"
+      },
+      {
+        "id": "bcb4973cf4ff5e0e",
+        "type": "leaf",
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "java.md",
+            "mode": "preview"
+          }
+        },
+        "group": "ae1bbaa849db9d6b"
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "c6bdfcd39617b232",
+    "type": "split",
+    "children": [
+      {
+        "id": "e5cc99e1a8aff44d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "331ee29a29f99484",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {}
+            }
+          },
+          {
+            "id": "8e430885a8d0dc26",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "18f8a787a2fbfcc5",
+    "type": "split",
+    "children": [
+      {
+        "id": "6af145b471afe00e",
+        "type": "tabs",
+        "dimension": 30.154639175257735,
+        "children": [
+          {
+            "id": "095b8aa7c2a555c6",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "java.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "9ba8cc83b1d50fc1",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "57ada85cf7b5c81e",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "java.md"
+              }
+            }
+          },
+          {
+            "id": "bcc250a904e3c414",
+            "type": "leaf",
+            "state": {
+              "type": "calendar",
+              "state": {}
+            }
+          }
+        ],
+        "currentTab": 3
+      },
+      {
+        "id": "f5e69c2062eff618",
+        "type": "tabs",
+        "dimension": 69.84536082474227,
+        "children": [
+          {
+            "id": "0887643df4ac1c8c",
+            "type": "leaf",
+            "state": {
+              "type": "timeline",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "active": "e8d8f02b02d002d8",
+  "lastOpenFiles": [
+    "java.md",
+    "Day Planners/Day Planner-20211212.md",
+    "Day Planners/Day Planner-20211211.md",
+    "templates/hello template.md",
+    "Day Planners/Day Planner-20211210.md",
+    "2021-12-10.md",
+    "templates/t2.md",
+    "hello template.md",
+    "2021-12-08.md"
+  ]
+}
