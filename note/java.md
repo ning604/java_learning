@@ -8,7 +8,7 @@ int b =3;
 System.out.println(a+b);//13  
 System.out.println(a-b);//7  
 System.out.println(a*b);//30  
-System.out.println(a/b);//3-----因为3.3333自动转换为
+System.out.println(a/b);//3-----因为3.3333自动转换为3
 
 ```
 
