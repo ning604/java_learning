@@ -1829,9 +1829,14 @@ if(arr != null && arr.length > 0){
 2、定义数组，调用该方法，并指定要搜索的元素值，得到返回的结果输出。
 
 问题1： num要和每一个值比较，相同输出i，但不同的时候要所有值都不同才输出-1  
->解决方法， 不同的时候要所有值都不同，*那就放在循环外面*
+>解决方法， 不同的时候要和所有值都不同，*那就放在循环外面*
 
-问题2： return的使用，它结束方法了，怎么条件返回两个值? 而且必须在外面return？
+问题2： return的使用，它结束方法了，怎么条件返回两个值? 而且必须在for外面return？
+>注意一个误区：***return可以不只有一个！*** return可以结束方法，但可以不只有一个， （比如存在不同条件下不同return）， 先执行到的return就会直接跳出代码块，不再执行代码块以下的其他代码
+
+```ad-n
+title: 正确答案
+```
 
 ```java
 int [] arr = new int[]{ 11, 22, 33, 44, 55};  
@@ -1848,3 +1853,391 @@ public static int checkIndex(int [] arr, int num){
         return -1;  
 }
 ```
+<br/>
+<br/>
+
+```ad-donot
+
+并不是必须要在for循环外return, 但是for 循环搭配return会有坑。
+
+以下面**错误代码**为例：
+```java
+public static int checkIndex(int [] arr, int num){  
+        for (int i = 0; i < arr.length; i++) {  
+            if (arr[i] == num) {  
+                return 0;  
+			 }else{  
+                return -1;  
+			 }  
+		    }  
+}
+//报错Missing return statement
+```
+
+
+1. 首先假设不考虑按照上面代码的写法，for循环只能执行一次的问题，仅仅来讨论一下，为什么报错报的是Missing return statement
+2. 看起来这个方法，只要得到数组参数arr，进入方法就进for循环遍历，只要进入循环，无论是满足条件arr[i] == num进入if，或者不满足进入else，都有对应的return,为什么还会提示没有return 呢？
+
+>原因是for循环的条件不一定满足，条件不满足的时候是不会执行循环体语句的！（例如传入一个空数组，length=0）这时会直接跳过循环，而这种情况下，方法并没有return，所以会报错
+
+
+![](attachments/Pasted%20image%2020220112095712.png)
+
+
+证明：假如在刚才代码的基础上，for循环外面再加一个return，传入一个空数组，看是否是预计的结果，这样可以证明我们刚才关于for循环使用return的猜测是否正确
+```java
+public static int checkIndex(int [] arr, int num){  
+        for (int i = 0; i < arr.length; i++) {  
+            if (arr[i] == num) {  
+                return 0;  
+ }else{  
+                return -1;  
+ }  
+        }  
+        return 2;  
+}
+
+
+// 空数组  
+int [] arr2 = {};  
+System.out.println(arr2.length);  //0
+System.out.println(checkIndex(arr2, 1));//2
+```
+
+当然，即使考虑空数组也没必要写成上面这样，最开始的正确答案可以直接return -1.
+
+
+此外，类似的还有条件语句需要注意，只有if， 没有else的时候，必须要写成情况1的形式，java认为if不会有任何情况下都能执行的能力。
+
+而有else，java编译器对if else 语句能够全面囊括所有情况的能力只限定在的if...else【情况2】(或if...else if...else)【情况3】时，而不包括if...else if。即使你把所有条件都列出来，它也不认为涵盖所有情况
+
+情况1和情况2是完全相同的。
+
+```java
+
+*******情况1
+if(){
+	return 1;
+}
+return 2；
+
+*******情况2
+if (){
+	return 1;
+}else {
+	return 2；
+}
+
+*******情况3
+if (){
+	return 1;
+}else if{
+	return 2；
+}else{
+	return 3;
+}
+```
+
+
+
+<br/>
+<br/>
+
+> 案例3：
+需求
+如果两个数组的类型，元素个数，元素顺序和内容是一样的我们就认为这2个数组是一模一样的。请使用方法完成：能够判断任意两个整型数组是否一样，并返回true或者 false。
+
+![](attachments/Pasted%20image%2020220126224235.png)
+
+分析
+1、定义方法-->是否需要参数、返回值类型？
+
+--需要接收参数，2个整型数组，需要布尔类型返回值
+
+2、在方法内部完成判断的逻辑，并返回布尔结果。
+
+问题1：java怎么判定相等，是值相等就是相等，还是包括元素类型？
+>解决方法：因为传入参数都是整型数组，保证了元素类型一样。
+
+问题2：因为不知道两个数组的长度，所以随便拿任意一个做循环的坐标都是不合适的，比如
+```java
+int [] arr1 = new int [] {1, 2, 3};  
+int [] arr2 = new int [] {1, 2, 3, 4};
+```
+如果用arr1做循环的坐标
+```java
+public static boolean equalityCheck (int [] arr1, int [] arr2){  
+    for (int i = 0; i< arr1.length; i++){  
+        if (arr1[i] != arr2[i]){  
+            return false;  
+ }  
+    }  
+    return true;  
+}
+```
+这样结果会有问题，arr1的索引只到2，在它索引范围内值都相同，但是实际上两数组并不一样
+
+> 解决方法：先判断数组长度是否相同，相同的情况下再选任意一个数组遍历。
+
+
+```ad-n 
+title:正确答案
+```
+
+```ad-n
+注意的问题
+1： for循环中，if搭配return的时候，如果满足条件就返回会造成循环只能执行一次，注意要选择条件不满足才返回，直接结束循环。
+
+2：当循环都执行完了，仍没有false，证明结果一定是true.
+
+3. 注意考虑for循环不满足循环条件时的返回值。
+
+```
+
+```java
+
+//自己的答案
+public static boolean equalityCheck (int [] arr1, int [] arr2){  
+    if (arr1.length != arr2.length){  //注意条件要写不等于
+        return false;  
+ }  //长度相等才能向下执行
+    for (int i = 0; i< arr1.length; i++){  
+        if (arr1[i] != arr2[i]){  
+            return false;  
+ }  
+    }  
+    return true;  // 
+}
+
+//标准答案
+public static boolean equalityCheck2 (int[] arr1, int[] arr2){  
+    if(arr1.length == arr2.length){//长度相等才比较  
+ for (int i = 0; i < arr1.length; i++){  
+            if (arr1[i] != arr2[i]) {  
+                return false;//元素不等就false  
+ }  
+        }  
+        return true;//所有的都遍历一次没有false，一定是true.  
+ }  
+    return false;//长度不等，或者不满足循环条件等其他情况，都是false  
+}
+
+```
+
+
+<br/>
+<br/>
+
+<br/>
+<br/>
+
+## 方法重载
+同一个类中，出现多个方法***名称相同，但是形参列表是不同的***，那么这些方法就是重载方法。
+调用方法的时候会通过参数的不同来区分调用的具体是哪个方法。
+
+案例导学
+开发武器系统，功能需求如下
+①可以默认发一枚武器。
+②可以指定地区发射一枚武器。
+③可以指定地区发射多枚武器。
+
+```java
+public static void fire(){  
+    System.out.println("默认发射一枚导弹");  
+}  
+  
+public static void fire(String location){// 形参：数据类型 形参名  
+ System.out.println("指定地点" + location +"默认发射一枚导弹");  
+}  
+  
+public static void fire(String location, int num){  
+    System.out.println("指定地点" + location + "发射"+ num + "枚导弹");  
+}
+
+
+fire();  
+String l1 = "沙漠";  
+fire(l1);  
+fire("不用变量行吗", 3);//行，可以是字符串，也可以是字符串变量，等同于直接传入数字1，和int num =1; 传入num;
+
+结果
+默认发射一枚导弹
+指定地点沙漠默认发射一枚导弹
+指定地点不用变量行吗发射3枚导弹
+```
+
+还可以在方法中调用重载方法
+例如：
+```java
+public static void fire(String location){// 形参：数据类型 形参名  
+ System.out.println("指定地点" + location +"默认发射一枚导弹");  
+}  
+
+可以改写为
+public static void fire(String location){// 形参：数据类型 形参名  
+fire(location, 1);  
+}  
+
+结果：
+指定地点沙漠发射1枚导弹
+```
+
+方法重载的优点：
+
+对于相似功能的业务场景：可读性好，方法名称相同提示是同一类型的功能，通过形参不同实现功能差异化的选择，这是一种专业的代码设计。
+
+
+<br/>
+<br/>
+
+### 方法重载的识别技巧
+1. 只要是同一个类中，方法***名称相同、形参列表不同***，那么他们就是重载的方法，其他都不管！(如：修饰符，返回值类型都无所谓)
+2. 形参列表不同指的是：形参的**个数、类型***、***顺序***不同，不关心形参的名称。
+```java
+1. public static void open () {}//原始方法
+2. public static void open(int a){}//是重载，形参个数不同
+3. static void open(int a, int b){}//是重载，形参个数不同
+4. public static void open(double a, int b){}//是重载，数据类型不同
+5. public static void open(int a, double b){}//是重载，形参顺序不同
+6. public void open(int i, double d){}//不是重载，形参和5同，重复方法
+7. public static void OPEN(){}//不是重载，方法名称不同，区分大小写，新方法
+```
+
+
+
+<br/>
+<br/>
+
+
+
+### return 单独使用
+
+>return关键字单独使用，不需要返回值：return; 
+>可以立即跳出并结束当前方法的执行；
+> return关键字单独使用可以放在任何方法中。
+
+![](attachments/Pasted%20image%2020220209215419.png)
+<br/>
+<br/>
+
+<br/>
+<br/>
+
+
+
+# 编程案例
+
+## 案例1：买飞机票
+需求
+机票价格按照淡季旺季、头等舱和经济舱收费、输入机票原价、月份和头等舱或经济舱。
+按照如下规则计算机票价格：旺季(5-10月)头等舱9折，经济舱8.5折，淡季(11月到来年4月)头等舱7折，经济舱6.5折。
+
+自己分析：
+1. 定义方法，有参数3个：原价，月份，经济or头等舱， 有返回值：最终票价
+2. 用switch case 来分月份，利用穿透性
+
+```ad-n
+==比较的是两个字符串的地址是否为相等（同一个地址），equals()方法比较的是两个字符串对象的内容是否相同（当然，若两个字符串引用同一个地址，使用equals()比较也返回true）。
+
+要比较字符串内容是否相等，应该用 string的equals方法
+
+```
+
+```java
+public class cases {  
+    public static void main(String[] args) {  
+        // 手动输入原价,月份和头等舱或经济舱。  
+ Scanner sc = new Scanner(System.in);  
+  
+ System.out.println("请输入机票原价");  
+ double originPrice = sc.nextDouble();  
+ System.out.println("请输入月份");  
+ int month = sc.nextInt();  
+ System.out.println("请输入飞机舱型，经济舱或头等舱");  
+ String classes = sc.next();  
+ System.out.println("您的机票优惠后价格为；" + price(originPrice, month, classes) );  
+ }  
+  
+    public static double price(double originPrice, int month, String classes){  
+        double price =0;  
+ // 淡季  
+ switch (month){  
+            case 1:  
+            case 2:  
+            case 3:  
+            case 4:  
+            case 11:  
+            case 12:  
+//                if (classes == "经济舱"){// 不行，==比较内存地址  
+ if (classes.equals("经济舱") ){// equals比较内容  
+ price = originPrice * 0.65;  
+ }else if(classes.equals("头等舱") ){  
+                    price = originPrice * 0.7;  
+ }else{  
+                System.out.println("舱型有误，请重新输入");  
+ price = -1;  
+ }  
+                break;  
+ case 5:  
+            case 6:  
+            case 7:  
+            case 8:  
+            case 9:  
+            case 10:  
+                if (classes.equals("经济舱")){  
+                    price = originPrice * 0.85;  
+ }else if(classes.equals("头等舱") ){  
+                price = originPrice * 0.9;  
+ }else{  
+                System.out.println("舱型有误，请重新输入");  
+ price = -1;  
+ }  
+                break;  
+ }  
+        return price;  
+ }  
+  
+  
+}
+```
+>缺点：用switch case 分支来确定月份代码太长，繁琐， 中间的price可以用*=
+>注意：== 和equals的使用。对引用类型数据，== 比较内存地址， equals比较对象的值。
+
+
+答案分析
+1. 键盘录入机票原价、月份和机舱类型
+2. 使用判断月份是是旺季还是淡季，使用 switch分支判断是头等舱还是经济舱。
+3. 选择对应的折扣进行计算并返回计算的结果。
+
+```java
+public static double cal(double money, int month, String type){  
+        if(month >=5 && month <=10){  
+            switch(type){  
+                case "经济舱":  
+                    money *= 0.85;  
+ break; case "头等舱":  
+                    money *= 0.9;  
+ break; default:  
+                    System.out.println("输入舱型有误，请重新输入头等舱或经济舱");  
+ money = -1;  
+ }  
+        } else if(month >=1 && month <=4 || month ==11 || month==12){  
+            switch (type){  
+                case "经济舱":  
+                    money *= 0.65;  
+ break; case "头等舱":  
+                    money *= 0.7;  
+ break; default:  
+                    System.out.println("输入舱型有误，请重新输入头等舱或经济舱");  
+ money = -1;  
+ }  
+            }else{  
+            System.out.println("您输入的月份有误，请重新输入1-12");  
+ money = -1;  
+ }  
+        return money;  
+ }  
+}
+```
+>注意，case值比较，从 Java SE 7 开始，switch 支持字符串 String 类型了，同时 case 标签必须为字符串常量或字面量。可以直接比较字符串的内容。
+
