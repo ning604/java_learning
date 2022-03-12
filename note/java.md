@@ -4835,6 +4835,13 @@ ArrayList<String> list1 = new ArrayList<>();
 这时如果加的元素不是String类型的话，会报错！
 ![](attachments/Pasted%20image%2020220227223211.png)
 
+如果非要什么数据类型都混在一起加到集合里，也不建议用最原始的定义方法 ArrayList list = new ArrayList();
+推荐写成
+```java
+ArrayList <Object> list = new ArrayList<>();
+```
+
+
 <br/>
 <br/>
 
@@ -4989,6 +4996,19 @@ System.out.println(grade);//[98, 66, 89, 50, 100]
 ```
 
 上面代码就存在问题，因为索引的变化，导致遍历过程不对
+
+可以解决的方法: 因为删除成功了，元素左移了，相当于这个时候i提前遍历到下一个数了，所以可以给i--
+
+```java
+for (int i = 0; i<grade.size(); i++){  
+    if(grade.get(i)<80){  
+        grade.remove(grade.get(i)); 
+		i--;
+ }  
+}  
+System.out.println(grade);//[98, 66, 89, 50, 100]
+```
+
 
 > 解决方法---从后面反向遍历
 > 因为删除元素后右侧元素左移，没有影响到左侧元素的索引
@@ -5265,3 +5285,953 @@ public class case3 {
 ```
 ![](attachments/Pasted%20image%2020220303211231.png)
 ![](attachments/Pasted%20image%2020220303211256.png)
+
+<br/>
+<br/>
+
+<br/>
+<br/>
+
+<br/>
+<br/>
+
+# 项目--银行网银系统
+![](attachments/Pasted%20image%2020220306213852.png)
+
+## 1. 系统准备，首页设计
+![](attachments/Pasted%20image%2020220308171321.png)
+
+
+系统准备内容需求：
+- 每个用户的账户信息都是一个对象，需要提供账户类。
+- 需要准备一个容器，用于存储系统全部账户对象信息。
+
+- 首页只需要包含：登录和注册2个功能。
+
+
+
+实现步骤：
+-  定义账户类，用于后期创建账户对象封装用户的账户信息。
+- 账户类中的信息至少需要包含(卡号、姓名、密码、余额、取现额度)
+- 需要准备一个ArrayList的集合，用于存储系统用户的账户对象。
+- 需要展示欢迎页包含2个功能：开户功能、登录账户。
+
+
+```java
+public class Account {  
+//    /**  
+//     * 定义账户类，用于后期创建账户对象封装用户的账户信息。  
+//     * 账户类中的信息至少需要包含(卡号、姓名、密码、余额、取现额度)  
+//     */  
+  
+ //1. 成员私有  
+ private String cardNumber;//卡号  
+ private String userName;//用户名  
+ private String password;//密码  
+ private double balance;//余额  
+ private double limit;//取现额度  
+  
+  
+ //2. 无参构造器  
+ public Account(){  
+  
+     }  
+  
+     // getter/setter  
+ public void setCardNumber(String cardNumber){  
+          this.cardNumber = cardNumber;  
+ }  
+     public String getCardNumber(){  
+          return cardNumber;  
+ }  
+  
+  
+     public String getUserName() {  
+          return userName;  
+ }  
+  
+     public void setUserName(String userName) {  
+          this.userName = userName;  
+ }  
+  
+     public String getPassword() {  
+          return password;  
+ }  
+  
+     public void setPassword(String password) {  
+          this.password = password;  
+ }  
+  
+     public double getBalance() {  
+          return balance;  
+ }  
+  
+     public void setBalance(double balance) {  
+          this.balance = balance;  
+ }  
+  
+     public double getLimit() {  
+          return limit;  
+ }  
+  
+     public void setLimit(double limit) {  
+          this.limit = limit;  
+ }  
+}
+```
+
+```java
+import java.util.ArrayList;  
+import java.util.Scanner;  
+public class ATMSystem {  
+    /**  
+ * * ATM入口类  
+ */  
+ public static void main(String[] args) {  
+        //1. 定义账户类  
+ //2. 定义集合容器，存储所有账户对象  
+ ArrayList<Account> accounts = new ArrayList<>();  
+ //3. 展示系统首页  
+ Scanner sc = new Scanner(System.in);    
+ while (true) {  
+            System.out.println("============ATM网银系统==============");  
+ System.out.println("1. 账户登陆");  
+ System.out.println("2. 账户开户");  
+ System.out.println("请输入操作数字：");  
+
+ int command = sc.nextInt();  
+ switch(command){  
+                case 1://用户登陆  
+ break;  
+ case 2://账户开户  
+ break;  
+ default:  
+                    System.out.println("您输入的命令不存在，请重新输入");  
+ break; }  
+  
+  
+        }  
+    }  
+}
+```
+
+此处功能还不完善，后续补充
+
+
+## 2. 用户开户功能
+![](attachments/Pasted%20image%2020220308175936.png)
+需求：
+用户开户，创建新账户，录入信息，并把账户存起来
+
+
+
+
+分析
+①开户功能其实就是就是往系统的集合容器中存入一个新的账户对象的信息。
+
+
+开户功能实现步骤
+①开户应该定义成一个方法，并传入账户集合：
+```java
+public static void register(ArrayList<Account>accounts){...}
+```
+②创建一个Account账户类的对象用于封装账户信息(姓名、密码、卡号)
+③键盘录入姓名、密码、确认密码（需保证两次密码一致）
+④***生成账户卡号，卡号必须由系统自动生成8位数字（必须保证卡号的唯一）***
+⑤把Account账户对象存入到集合accounts中去。
+
+
+其中第④步独立成方法， 并且为了保证不重复，内部又调用了一个根据卡号判断账户是否存在的方法
+
+
+主界面加入开户部分的内容
+```java
+case 2://账户开户  
+ register(accounts,sc);  
+ break;
+```
+
+
+开户方法
+```java
+/**  
+ * 用户开户功能的实现  
+ * @param accounts 接收的账户集合  
+ */  
+public static void register(ArrayList<Account> accounts, Scanner sc){  
+  
+    System.out.println("----------系统开户操作----------");  
+ //1. 创建一个账户对象  
+ Account account = new Account();  
+ //2.让用户录入信息,封装信息  
+ System.out.println("请输入用户名");  
+ String username = sc.next();  
+ account.setUserName(username);  
+  
+ while(true) {  
+        System.out.println("请输入密码：");  
+ String password = sc.next();  
+  
+ System.out.println("请再次输入密码：");  
+ String password2 = sc.next();  
+ if (password2.equals(password)) {  
+            //密码正确，注入账户中，结束循环  
+ account.setPassword(password);  
+ break; } else {  
+            System.out.println("您两次输入密码不一致，请重新输入");  
+ }  
+    }  
+  
+    System.out.println("请输入账户取款限额");  
+ double limit = sc.nextDouble();  
+ account.setLimit(limit);  
+  
+  
+ //4. 为账户随机一个8位卡号且与其他账户不能重复（独立成方法）---------------------------调用方法-------------  
+ String cardNumber =   getRandomId(accounts);  
+ //拿到卡号，注入账户中  
+ account.setCardNumber(cardNumber);  
+  
+  
+ //3.账户对象添加到账户集合中  
+ accounts.add(account);  
+ System.out.println("恭喜您，" + username +"开户成功，您的卡号是"+cardNumber);  
+}
+```
+
+
+第④步生成卡号独立成方法，
+这里注意一个点，怎么把int类型的数字连接成一个字符串，不要用类型转换之类的，直接用String s = ""+i;通过加号在字符串当连接符这一用法，来实现数字连接成一个字符串 [2 加号作连接符](#2%20加号作连接符)， 注意一定要是双引号，不然会当作字符运算
+
+```java
+/**  
+ * 为账户随机一个8位卡号且与其他账户不能重复  
+ * @return  
+ */  
+private static String getRandomId(ArrayList<Account> accounts) {  
+    //1. 先生成8位数字，并且得连起来，随机数字怎么变String-->+做连接符，能加则加不能加就在一起  
+  
+ Random r =new Random();  
+ while(true) {//死循环要包括cardNumber初始化的过程  
+ String cardNumber = "";  
+ for (int i = 0; i < 8; i++) {  
+            cardNumber += r.nextInt(10);//0-9  
+ }  
+  
+        //难点：怎么判断不重复, 要和账户集合中所有账户的卡号做对比  
+ //可以考虑拿着卡号去和所有的账户对象的卡号做对比  
+ //可以把根据卡号去账户集合查账户独立成方法，后续方便使用  
+  
+ //调用查找根据卡号找账户对象的方法---------------------------调用方法---------------------------  
+ Account existingAcc =  getAccountByCardNum(cardNumber, accounts);  
+ if(existingAcc ==null){  
+            //说明卡号没有重复,return 结束循环  
+ return cardNumber;  
+ }  
+        //没满足条件有对象证明卡号重复，需要再生成再验，死循环  
+  
+ }  
+  
+  
+}
+```
+
+为了保证卡号不重复，设计一个根据卡号去账户集合中查找账户的方法，并在生成卡号方法里调用
+```java
+/**  
+ * 根据卡号查询出一个账户对象  
+ * @param cardNum 卡号  
+ * @param accounts 账户集合  
+ * @return 账户对象或者null  
+ */  
+public static Account getAccountByCardNum(String cardNum, ArrayList<Account> accounts){  
+    for(int i =0; i<accounts.size(); i++){  
+        Account exisitingAcc = accounts.get(i);  
+ if(exisitingAcc.getCardNumber().equals(cardNum)){  
+            return exisitingAcc;  
+ }  
+    }  
+    return null;//查无此对象  
+}
+
+```
+
+
+<br/>
+<br/>
+
+## 3. 用户登陆功能
+![](attachments/Pasted%20image%2020220309184529.png)
+
+分析
+①登录功能应该定义成一个方法，并传入账户集合：
+```java
+public static void login(ArrayList<Account>accounts){...}
+```
+首先判断集合是否为空，不空则继续，为空则提示注册，并且***结束方法，跳回主界面***
+②让用户输入卡号，根据卡号去账户集合中查询账户对象。(调用方法)
+③如果没有找到账户对象，说明登录卡号不存在，提示继续输入卡号。
+④如果找到了账户对象，说明卡号存在，继续输入密码。
+⑤如果密码不正确，提示继续输入密码
+⑥如果密码也正确，登陆成功！！
+
+
+主界面对应修改
+```java
+case 1://用户登陆  
+ login(accounts,sc);  
+ break;
+```
+
+
+登陆方法:
+
+```java
+/**  
+ * 根据用户输入的卡号，登陆账户  
+ * @param accounts 账户集合  
+ * @param sc 扫描器  
+ */  
+  
+public static void login(ArrayList<Account> accounts, Scanner sc){  
+    System.out.println("-------------------系统登陆操作----------------");  
+ //判断账户集合是否为空  
+ if(accounts.size()==0){  
+        System.out.println("系统中无任何账户，请先开户");  
+ return;//结束登陆方法，返回主界面  
+ }  
+  
+    //正式进入登陆操作  
+ while(true) {  
+        System.out.println("请输入卡号：");  
+ String id = sc.next();  
+ //调用根据卡号找账户功能  
+ Account acc = getAccountByCardNum(id, accounts);  
+ if (acc == null) {  
+            System.out.println("您输入的卡号不存在请重新输入");  
+ }else{//查找到了账户，开始输密码  
+ while (true) {  
+                System.out.println("请输入密码");  
+ String password = sc.next();  
+ //判断密码是否正确  
+ if(password.equals(acc.getPassword())){  
+                    System.out.println("用户 "+acc.getUserName()+", 卡号"+ id+"登陆成功！");  
+ //登陆完了不要直接返回return，不然就会又跳入主界面登陆or开户，  
+ //后续功能还需要在这里继续完善  
+ }else{  
+                    System.out.println("密码错误，请重新输入密码:");  
+ }  
+            }  
+        }  
+  
+    }
+```
+
+注意这里登陆成功之后的操作并没有写，并不完整，完整版在[7 密码修改，销户功能](#7%20密码修改，销户功能)。
+
+![](attachments/Pasted%20image%2020220310154817.png)
+![](attachments/Pasted%20image%2020220310154837.png)
+
+
+
+## 4. 登陆后：用户操作界面， 查询账户，退出账户
+![](attachments/Pasted%20image%2020220310155238.png)
+
+用户操作页设计、查询账户、退出账户功能分析
+①用户登录成功后，需要进入用户操作页。
+②查询就是直接展示当前登录成功的账户对象的信息。
+③退出账户是需要回到首页的。
+
+
+
+上面登陆页面完整一下
+```java
+public static void login(ArrayList<Account> accounts, Scanner sc){  
+    System.out.println("-------------------系统登陆操作----------------");  
+ //判断账户集合是否为空  
+ if(accounts.size()==0){  
+        System.out.println("系统中无任何账户，请先开户");  
+ return;//结束登陆方法，返回主界面  
+ }  
+  
+    //正式进入登陆操作  
+ while(true) {  
+        System.out.println("请输入卡号：");  
+ String id = sc.next();  
+ //调用根据卡号找账户功能  
+ Account acc = getAccountByCardNum(id, accounts);  
+ if (acc == null) {  
+            System.out.println("您输入的卡号不存在请重新输入");  
+ }else{//查找到了账户，开始输密码  
+ while (true) {  
+                System.out.println("请输入密码");  
+ String password = sc.next();  
+ //判断密码是否正确  
+ if(password.equals(acc.getPassword())){  
+                    System.out.println("用户 "+acc.getUserName()+", 卡号"+ id+"登陆成功！");  
+ //登陆完了不要直接返回return，不然就会又跳入主界面登陆or开户，  
+ //后续功能还需要在这里继续完善  
+  
+ //登陆后展示用户操作页面  
+ showUserHomepage(sc, acc);  
+ return;//结束登陆方法  
+ }else{  
+                    System.out.println("密码错误，请重新输入密码:");  
+ }  
+            }  
+        }  
+  
+    }  
+}
+```
+
+
+用户操作页面设计
+```java
+/**  
+ * 展示登陆后的操作页面  
+ */  
+private static void showUserHomepage(Scanner sc, Account acc) {  
+    while(true) {  
+    System.out.println("-------------------用户操作页面---------------");  
+ System.out.println("1. 查询账户");  
+ System.out.println("2. 存款");  
+ System.out.println("3. 取款");  
+ System.out.println("4. 转账");  
+ System.out.println("5. 修改密码");  
+ System.out.println("6. 退出");  
+ System.out.println("7. 注销账户");  
+  
+ System.out.println("请选择操作数字：");  
+ int command = sc.nextInt();  
+ switch (command) {  
+            case 1://查询账户（展示当前登陆账户）  
+ //独立方法, 展示当前登陆账户,参数要从上面传过来  
+ showAccount(acc);  
+ break; case 2://存款  
+ break;  
+ case 3://取款  
+ break;  
+ case 4://转账  
+ break;  
+ case 5://修改密码  
+ break;  
+ case 6://退出  
+ //回到最开始的登陆页面，也就是要退两层  
+ System.out.println("退出账户，欢迎下次使用");  
+ return;//结束当前用户操作界面方法  
+ case 7://注销账户  
+ break;  
+ default:  
+                System.out.println("您输入的命令有误，请重新输入：");  
+ }  
+    }  
+  
+}
+```
+
+展示当前账户信息，要独立成方法，注意这里要展示的是登陆的这个账户，所以要不账户对象传过来
+```java
+/**  
+ * 展示当前账户信息  
+ * @param acc  
+ */  
+public static void showAccount(Account acc){  
+    System.out.println("---------当前账户信息如下--------");  
+ System.out.println("卡号"+ acc.getCardNumber());  
+ System.out.println("户主"+ acc.getUserName());  
+ System.out.println("余额"+ acc.getBalance());  
+ System.out.println("限额"+ acc.getLimit());  
+}
+```
+
+
+退出账户需要退两次， 第一层return结束用户界面这个方法，第二次return退出登陆方法， 这样就再次回到了银行ATM主界面那里
+
+![](attachments/Pasted%20image%2020220310172625.png)
+![](attachments/Pasted%20image%2020220310172703.png)
+![](attachments/Pasted%20image%2020220310172719.png)
+
+<br/>
+<br/>
+
+
+
+## 5. 登陆后，存款功能
+
+![](attachments/Pasted%20image%2020220310172804.png)
+
+存款分析
+①存款就是拿到当前账户对象。
+②然后让用户输入存款的金额。
+③调用账户对象的setMoney方法将账户余额修改成存钱后的余额。
+
+
+```java
+/**  
+ * 存款  
+ * @param acc 当前账户  
+ * @param sc 扫描器  
+ */  
+ public static void depositeMoney(Account acc, Scanner sc){  
+        System.out.println("--------存款功能-------");  
+ System.out.println("请输入存款金额：");  
+//        acc.getBalance() += sc.nextDouble();//不可以这么写，也因为返回的是double类型的数据, 是值！！而不是变量  
+ Double money =  sc.nextDouble();  
+ //记得要更新账户中的余额 原来的+存进去的  
+ acc.setBalance(money+acc.getBalance());  
+ System.out.println("存款成功，当前账户信息如下：");  
+ showAccount(acc);  
+ }
+```
+
+![](attachments/Pasted%20image%2020220311211258.png)
+
+
+<br/>
+<br/>
+
+## 6. 登陆后，取款功能
+![](attachments/Pasted%20image%2020220311211504.png)
+①取款需要先判断账户是否有钱。
+②有钱则拿到自己账户对象。
+③然后让用户输入取款金额
+④判断取款金额是否超过了当次限额，以及余额是否足够
+⑤满足要求则调用账户对象的withdrawMoney方法完成金额的修改。取完钱别忘了改余额
+
+```java
+/**  
+ * 取款功能  
+ * @param acc 当前账户  
+ * @param sc 扫描器接收取款金额  
+ */  
+private static void withdrawMoney(Account acc, Scanner sc) {  
+    System.out.println("----------取款功能-------");{  
+        //1. 判断是否小于100  
+ if(acc.getBalance()<100){  
+            System.out.println("账户余额小于100， 无法取款");  
+ return;//记得退出取钱方法  
+ }  
+        while(true) {  
+            System.out.println("请输入取款金额：");  
+ Double withdraw = sc.nextDouble();  
+ //2. 判断是否超过限额  
+ if (withdraw > acc.getLimit()) {  
+                System.out.println("取款超过限额，您的取款限额是：" + acc.getLimit() + "元");  
+ //这里最好是重新输入取款金额，而不是退出取款方法  
+ }else{  
+                    //3. 判断是否超过余额  
+ if (acc.getBalance() < withdraw) {  
+                    System.out.println("账户余额不足，您的账户余额是"+acc.getBalance());  
+ }else{  
+                    //可以取款  
+ System.out.println("恭喜您取款"+withdraw+"元成功");  
+ //更新余额  
+ acc.setBalance(acc.getBalance()-withdraw);  
+ showAccount(acc);  
+ return;//别忘了return结束取钱方法，同时也结束循环  
+ }  
+            }  
+  
+        }  
+    }  
+}
+```
+
+<br/>
+<br/>
+
+## 7. 登陆后， 转账功能
+
+![](attachments/Pasted%20image%2020220312102332.png)
+
+
+分析
+①转账功能需要判断系统中是否有2个账户对象及以上。
+②同时还要判断自己账户是否有钱。
+③接下来需要输入对方卡号，判断对方账户是否存在。
+④对方账户存在还需要认证对方户主的姓氏。
+⑤满足要求则可以把自己账户对象的金额修改到对方账户对象中去。修改双方的余额
+
+
+首先①步中，需要账户集合，而登陆后的用户操作界面的参数里并没有账户集合![](attachments/Pasted%20image%2020220312103025.png) 所以这里要依次添加参数， 先把账户集合从登陆页面方法传下来，到用户操作界面方法，再到转账方法
+
+
+```java
+/**  
+ * 转账功能  
+ * @param accounts 全部账户集合，用来查找转账对象  
+ * @param acc 自己的账户  
+ * @param sc 扫描器接收转账金额  
+ */  
+  
+public static void transferMoney(ArrayList<Account> accounts, Account acc, Scanner sc ){  
+    System.out.println("---------用户转账功能-------");  
+ if(accounts.size()<2){  
+        System.out.println("系统中没有两个或以上账户，不能进行转账， 请先开户");  
+ return;//结束方法  
+ }  
+  
+    //没有进入if分支就是不满足条件，这里可以不用写else  
+ if(acc.getBalance()==0){  
+        System.out.println("余额为0，不能转账");  
+ return;//卫语句风格  
+ }  
+  
+    //两个条件都不满足，正式开始转账  
+ while(true) {  
+        System.out.println("请输入对方账户卡号：");  
+ String receiveId = sc.next();  
+ //1. 看看是否是自己的卡号  
+ if(receiveId.equals(acc.getCardNumber())){  
+            System.out.println("您不可以给自己转账，请重新输入");  
+ continue;//不可以用break，会跳出死循环的  
+ }  
+  
+        //2. 判断卡号是否存在, 根据卡号查询对方账户，调用方法  
+ Account foundAcc = getAccountByCardNum(receiveId, accounts);  
+ if (foundAcc == null) {  
+            System.out.println("账户不存在，请重新输入卡号");  
+ }else{  
+            String name = foundAcc.getUserName();  
+ //请输入 x梅梅的姓氏，所以这里要拿到户主的名，并把姓变成*  
+ //不要用遍历！！用字符串操作，按位置截取，不要用按内容替换  
+ String tip = "*" + name.substring(1);//只写开始，1-最后  
+  
+ System.out.println("请输入" + tip + "的姓氏");  
+ String Lastname = sc.next();  
+  
+ //Lastname.equals(name.substring(0))可以用startWith简写  
+ if (name.startsWith(Lastname)) {  
+                System.out.println("验证成功");  
+ while(true) {  
+                    System.out.println("请输入转账金额：");  
+ Double money = sc.nextDouble();  
+ if (money > acc.getBalance()) {  
+                        System.out.println("余额不足, 剩余金额为" + acc.getBalance() + "，请重新输入");  
+ } else {  
+                        //可以转账  
+ acc.setBalance(acc.getBalance()-money);  
+ foundAcc.setBalance(foundAcc.getBalance()+money);  
+ System.out.println("转账成功"+"您的账户余额为"+acc.getBalance());  
+ return;//只要完成转账就退出，直接用return，会跳出所有循环，直接结束  
+ }  
+                }  
+  
+            } else {  
+                    System.out.println("验证失败");//会继续循环重新输入卡号  
+ }  
+  
+  
+        }  
+  
+    }  
+}
+```
+
+
+<br/>
+<br/>
+
+## 7. 密码修改，销户功能
+![](attachments/Pasted%20image%2020220312112940.png)
+
+修改密码：
+①输入当前密码
+②输入新密码，并更新账户对象的内容
+③重新登陆
+
+>!!!再次强调字符串比较用equals!!!!
+
+```java
+  
+    /**  
+ * 修改密码  
+ * @param acc 当前账户  
+ * @param sc 扫描器接新密码  
+ */  
+ public static void updatePassword(Account acc, Scanner sc){  
+        System.out.println("------------修改密码功能-----------");  
+ while(true) {  
+            System.out.println("请输入当前密码");  
+ String nowPassword = sc.next();  
+ //1. 判断和当前密码是否一样  
+//            if (nowPassword != acc.getPassword()) {  
+ //再强调一遍比较字符串用equals！！！！  
+ if (nowPassword.equals(acc.getPassword())) {  
+                while(true) {  
+                    System.out.println("请输入新密码");  
+ String newPassword = sc.next();  
+ System.out.println("请再次输入新密码：");  
+ String newPassword2 = sc.next();  
+ if (newPassword.equals(newPassword2)) {  
+                        acc.setPassword(newPassword);  
+ System.out.println("密码修改成功，请重新登陆");  
+ return; } else {  
+                        System.out.println("两次输入密码不一致,请重新输入");  
+ }  
+                }  
+            }else{  
+                System.out.println("密码错误，请重新输入");  
+ }  
+        }  
+    }
+```
+
+
+
+销户功能
+分析
+①真的要销户吗
+②账户是否还有余额
+③从集合中删除该对象
+④删除成功，返回ATM首页
+
+
+注意！！！
+因为销户成功，则返回ATM首页
+销户失败，则继续留在登陆页面，所以不能两次return直接退出，要分情况，为了能分情况，销户方法需要有一个Boolean类型的返回值
+
+```java
+ /**  
+ * 销户  
+ * @param accounts 账户集合  
+ * @param acc 当前账户  
+ * @param sc 扫描器  
+ */  
+ public static Boolean deleteAccount(ArrayList<Account> accounts, Account acc, Scanner sc){  
+        System.out.println("----------销户功能-----------");  
+ System.out.println("确定要销户吗？ Y/N");  
+ String rs = sc.next();  
+ switch(rs){  
+            case "Y":  
+                if(acc.getBalance()>0){  
+                    System.out.println("您还有余额没取完, 不允许销户");  
+ //这里往下走到break，再结束switch，return false  
+ }else {  
+                    accounts.remove(acc);  
+ System.out.println("销户成功");  
+ return true; }  
+                break;//break不能丢  
+  
+ case "N":  
+                System.out.println("账户继续保留");  
+ //为了让销户不成功时还能留着登陆页面，要区分开成功与没成功的情况，不能都是结束方法后case7那里直接return  
+ //所以需要一个boolean 的返回值  
+//                return false;//最后面放一个就行  
+ break;  
+ default:  
+                System.out.println("命令不存在");  
+ break; }  
+        return false;
+```
+
+
+
+
+至此， ATM所有功能全部完成， 重新更新一下登录页
+
+```java
+  
+/**  
+ * 展示登陆后的操作页面  
+ */  
+private static void showUserHomepage(Scanner sc, Account acc, ArrayList<Account> accounts) {  
+    while(true) {  
+    System.out.println("-------------------用户操作页面---------------");  
+ System.out.println("1. 查询账户");  
+ System.out.println("2. 存款");  
+ System.out.println("3. 取款");  
+ System.out.println("4. 转账");  
+ System.out.println("5. 修改密码");  
+ System.out.println("6. 退出");  
+ System.out.println("7. 注销账户");  
+  
+ System.out.println("请选择操作数字：");  
+ int command = sc.nextInt();  
+ switch (command) {  
+            case 1://查询账户（展示当前登陆账户）  
+ //独立方法, 展示当前登陆账户,参数要从上面传过来  
+ showAccount(acc);  
+ break; case 2://存款  
+ depositeMoney(acc, sc);  
+ break; case 3://取款  
+ withdrawMoney(acc, sc);  
+ break; case 4://转账  
+ transferMoney(accounts, acc, sc);  
+ break; case 5://修改密码  
+ updatePassword(acc, sc);  
+ return;//修改过密码后重新登陆  
+ case 6://退出  
+ //回到最开始的登陆页面，也就是要退两层  
+ System.out.println("退出账户，欢迎下次使用");  
+ return;//结束当前用户操作界面方法  
+ case 7://注销账户  
+ //从账户集合中删除当前账户  
+ if(deleteAccount(accounts, acc, sc)==true) {  
+                    return;//销户成功，回到首页  
+ }else{  
+                    break;//留在操作页  
+ }  
+            default:  
+                System.out.println("您输入的命令有误，请重新输入：");  
+ }  
+    }  
+  
+}
+```
+
+
+
+
+
+
+<br/>
+<br/>
+
+<br/>
+<br/>
+
+
+
+
+
+
+
+
+
+
+
+
+# 面向对象复习：类，对象，构造器，this， 封装， Javabean
+
+## 1. 定义类的注意事项：
+- 类名建议首字母大写。满足驼峰模式。
+- 一个Java文件中可以定义多个类，但是只能有一个类是用public修饰的，public修饰的类名必须成为Java代码的文件名称。public修饰的类可以被其他包调用，但是class类只能在当前包里访问。
+- 按照规范：建议一个Java文件只定义一个类。
+
+## 2. 类中成分
+类中可以定义的5大成分：***成员变量、构造器、成员方法、代码块、内部类。***
+
+
+修饰符class类名{
+1、成员变量Field:描述类或者对象的属性信息，如：姓名、年龄。
+2、成员方法Method:描述类或者对象的行为的，如：唱歌、吃饭、买票。
+3、构造器Constructor:初始化一个类的对象返回。
+4、内部类：还没有学习。
+5、代码块：还没有学习。
+}
+
+
+## 3. 构造器
+1. 构造器的作用？
+初始化类的对象，并返回对象的地址。
+
+2. 构造器有几种，各自的作用是什么？
+	- 无参数构造器：初始化的对象时，成员变量的数据均采用默认值。
+	- 有参数构造器：在初始化对象的时候，同时可以为对象进行赋值。
+
+3. 构造器有哪些注意事项？
+	- 任何类定义出来，默认就自带了无参数构造器，写不写都有。
+	-  一旦定义了有参数构造器，无参数构造器就没有了，此时就需要自己写无参数构造器了。
+
+## 4. this关键字
+this关键字
+- 作用：出现在成员方法、构造器中代表当前对象的地址，用于指定访问当前对象的成员变量、成员方法。
+- this出现在构造器，或者方法中，哪个对象调用他们，this就代表哪个对象
+
+![](attachments/Pasted%20image%2020220306223032.png)
+
+![](attachments/Pasted%20image%2020220306223046.png)
+
+
+<br/>
+<br/>
+
+## 5. 封装
+***面向对象的三大特征：封装、继承、多态。***
+- 封装：解决属性和方法属于哪个对象的问题。
+	- private 修饰的成员遍历只能在本类中访问
+- 封装步骤：通常将成员变量私有、提供方法进行暴露。
+- 封装作用：提高业务功能设计的安全性，提高开发效率。
+
+<br/>
+<br/>
+
+## 6. 标准JavaBean
+
+也可以理解成实体类（真实存在的实体），其对象可以用于在程序中封装数据
+
+Java中书写标准JavaBean.必须满足如下要求：
+- 成员变量使用private修饰。（成员变量私有化）
+- 提供每一个成员变量对应的setXxx（）/getXxx（）.
+- 必须提供一个无参构造器。
+
+
+
+定义：符合一定规范编写的Java类，不是一种技术，而是一种规范。大家针对这种规范，总结了很多开发技巧、工具函数。符合这种规范的类，可以被其它的程序员或者框架使用。
+
+所有遵循“一定编程原则”的Java类都可以被称作JavaBean。
+至于这么做的目的:方便别人调用你的类。
+
+
+<br/>
+<br/>
+
+<br/>
+<br/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 面向对象进阶
+![](attachments/Pasted%20image%2020220312154201.png)
+
+![](attachments/Pasted%20image%2020220306223449.png)
+<br/>
+<br/>
+
+
+# static 静态关键字
+![](attachments/Pasted%20image%2020220306223904.png)
+
+## 1. static作用，修饰成员变量的用法
+static是静态的意思，可以修饰成员变量和成员方法。
+
+static变量也称作静态变量，静态变量和非静态变量的区别是：
+- 静态变量从属于类， 被所有的对象所共享，在内存中只有一份，它当且仅当在类初次加载时会被初始化。
+- 而非静态变量是对象所拥有的，在创建对象的时候被初始化，存在多个副本，各个对象拥有的副本互不影响。
+
+
+static修饰成员变量表示该成员变量***只在内存中只存储一份***，（不像之前普通的成员变量，每创建一个对象，就存储一份）***可以被共享访问、修改。***
+
+
+静态成员变量(***有static修饰，属于类，内存中加载一次***)：常表示如在线人数信息、等需要被共享的信息，可以被共享访问。
+
+**这里要强调一下：**
+
+-   static修饰的成员变量和方法，从属于类
+    
+-   普通变量和方法从属于对象
