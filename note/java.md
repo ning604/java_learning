@@ -6216,22 +6216,448 @@ Java中书写标准JavaBean.必须满足如下要求：
 
 # static 静态关键字
 ![](attachments/Pasted%20image%2020220306223904.png)
+### static关键字的用途
 
-## 1. static作用，修饰成员变量的用法
-static是静态的意思，可以修饰成员变量和成员方法。
+一句话描述就是：***方便在没有创建对象的情况下进行调用(方法/变量)***。
 
+显然，被static关键字修饰的方法或者变量不需要依赖于对象来进行访问，只要类被加载了，就可以通过类名去进行访问。
+
+static可以用来修饰类的成员方法、类的成员变量，另外也可以编写static代码块来优化程序性能
+
+
+
+## 1. static修饰成员变量的用法
+### static修饰变量
 static变量也称作静态变量，静态变量和非静态变量的区别是：
 - 静态变量从属于类， 被所有的对象所共享，在内存中只有一份，它当且仅当在类初次加载时会被初始化。
 - 而非静态变量是对象所拥有的，在创建对象的时候被初始化，存在多个副本，各个对象拥有的副本互不影响。
 
 
-static修饰成员变量表示该成员变量***只在内存中只存储一份***，（不像之前普通的成员变量，每创建一个对象，就存储一份）***可以被共享访问、修改。***
+static修饰成员变量表示该成员变量***从属于类， 只在内存中只存储一份***，（不像之前普通的成员变量，每创建一个对象，就存储一份），常表示如在线人数信息、等需要被共享的信息，***可以被共享访问、修改。***
 
 
-静态成员变量(***有static修饰，属于类，内存中加载一次***)：常表示如在线人数信息、等需要被共享的信息，可以被共享访问。
+<font color =red>**修改一个对象中的属性，则其他对象的属性全部改变，则证明此属性是所有对象共享的！**</font>
+
 
 **这里要强调一下：**
 
 -   static修饰的成员变量和方法，从属于类
     
 -   普通变量和方法从属于对象
+
+
+### 定义静态成员变量
+> 静态成员变量通常会用public修饰，为了方便共享
+```java
+public class User {  
+    //记录在线人数  
+ //static 修饰的成员变量，是静态成员变量  
+ //在内存中只有一份，归属于类，可以共享和访问  
+ public  static int onlineNumber = 121;  
+  
+}
+```
+### 访问静态变量
+
+```ad-def
+类名.静态变量名
+```
+也可以用对象名.静态变量名，但是不推荐这样用
+同一个类中访问静态变量，可以不写类名
+
+```java
+public class StaticField1 {  
+    public static void main(String[] args) {  
+        //static 修饰成员变量的作用和访问特点  
+  
+ //1. 类名.静态变量名  
+ System.out.println(User.onlineNumber);  //121
+  
+ //2. 对象名.静态变量名  
+ User u = new User();  
+ u.onlineNumber++;  
+ System.out.println(u.onlineNumber);  //122
+ }  
+}
+```
+
+```java
+public static void main(String[] args) {  
+        //static 修饰成员变量的作用和访问特点  
+  
+ //1. 类名.静态变量名  
+ System.out.println(User.onlineNumber);  
+  
+ //2. 对象名.静态变量名  
+ User u = new User();  
+ u.name = "张三";  
+//        User.age = 21;//报错，实例变量必须通过对象名访问，不能通过类名  
+  
+ //静态变量既可以用类名也可以用变量名访问  
+ u.onlineNumber++;//新来了一个人  
+ User.onlineNumber++;//又来了一个；  
+ //同一类中，可以直接访问静态成员变量，不需要类名  
+ System.out.println(onlineNumber);//123  
+ System.out.println(User.onlineNumber);//123  
+ System.out.println(u.onlineNumber);//123  
+ }  
+  
+}
+```
+## 2. static修饰成员变量内存原理
+
+![](attachments/Pasted%20image%2020220313155505.png)
+
+详情见https://www.bilibili.com/video/BV1Cv411372m?p=95
+
+静态变量内存区是随着类初始化的时候一起出现的。
+
+
+
+
+### 静态成员变量与一般成员变量的区别
+1. 定义：静态成员变量有static关键字修饰，而一般成员变量没有；
+2. 使用：静态成员变量可以通过类名.静态成员变量名直接访问，一般成员变量需要通过对象.一般成员变量名访问；
+3. 初始化：java虚拟机加载类的过程中会为静态成员变量分配内存，一般成员变量在java虚拟机创建一个实例，为每个实例分配一块内存；
+4. 所属范围：静态成员变量被类的所有实例共享，而一般成员变量取决于每个实例；
+5. 内存分布：静态成员变量位于堆中特殊的静态变量区，而一般成员变量位于堆内存；
+6. 生命周期：静态成员变量取决于类的生命周期，而一般成员变量取决于实例的生命周期。
+
+
+### 补充：局部变量，成员变量
+https://blog.csdn.net/weixin_29210759/article/details/114520001
+
+根据定义变量位置的不同，可以将变量分为成员变量和局部变量。
+- 局部变量是定义在一个方法内的变量：方法中
+
+- 成员变量是 定义在一个类的变量：类中方法外
+	- 静态成员变量
+	- 一般成员变量
+
+
+
+<br/>
+<br/>
+
+## 3. static 方法
+
+成员方法的分类：
+- 静态成员方法(有static修饰，归属于类)，建议用类名访问，也可以用对象访问。
+- 实例成员方法(无static修饰，归属于对象)，只能用对象触发访问。
+
+static方法也成为静态方法，由于静态方法不依赖于任何对象就可以直接访问，因此对于静态方法来说，是没有this，（super也是）的，因为不依附于任何对象，既然都没有对象，就谈不上this了。
+
+并且由于此特性，在静态方法中不能访问类的非静态成员变量和非静态方法，因为非静态成员变量和非静态方法都必须依赖于具体的对象才能被调用。
+
+```虽然在静态方法中不能访问非静态成员方法和非静态成员变量，但是在非静态成员方法中是可以访问静态成员方法和静态成员变量。```
+
+
+1. static静态成员方法通过`类名.静态方法名`调用静态方法
+2. 同一个类中，可以省略类名，直接调用静态方法（之前的test类，main方法外定义的其他的静态方法可以在main中直接调用的原因就是这个）
+
+3. 实例方法无static，***可以直接访问所有成员变量（静态，非静态），调用时必须通过对象触发调用***
+
+4.   对象.静态方法 也可调用但不推荐  
+
+```java
+public class Student {  
+    private String name;//一般成员变量  
+ private static int age;//静态成员变量  
+  
+ /**  
+ * static静态成员方法, 有 static修饰，归属于类，可以被共享访问，类名访问  
+ */  
+ public static int getMax (int age1, int age2){  
+//        System.out.println(name);//静态方法不能访问非静态变量  
+ return age1>age2? age1:age2;  
+ }  
+  
+  
+    /**  
+ * * 实例方法：无static， 属于对象，可以调用一般成员变量,必须用对象触发访问  
+ */  
+  
+ public void study(){  
+        System.out.println(name +"在好好学习");  
+ age =10;//普通方法可以访问静态变量  
+ System.out.println(age);  
+ }  
+  
+  
+    public static void main(String[] args) {  
+        //1. 类名.静态方法名  
+ System.out.println(Student.getMax(10, 3));  
+  
+ //2. 同一个类中访问静态方法，可以不写类名  
+ System.out.println(getMax(10, 20));  
+//        study();//报错， 实例方法必须通过对象触发  
+  
+ //3. 对象.实例方法  
+ Student s = new Student();  
+ s.name = "小明";  
+ s.study();  
+  
+ //4. 对象.静态方法,不推荐  
+ s.getMax(10, 100);  
+ }  
+}
+```
+
+所以，如果想在不创建对象的情况下调用某个方法，就可以将这个方法设置为static。最常见的静态方法就是main方法，这就是为什么main方法是静态方法就一目了然了，因为程序在执行main方法的时候没有创建任何对象，只有通过类名来访问。
+
+
+
+### static方法使用场景
+
+- 实例方法： 表示对象自己的行为的，且方法中需要访问实例成员的，则该方法必须申明成实例方法。
+- 静态方法：如果该方法是以执行一个共用功能为目的，则可以申明成静态方法。
+
+<br/>
+<br/>
+
+###  static方法内存图
+方法区一开始初始化的时候，加载class文件， 其中就包括静态成员方法，等创建对象时，会在方法区也加载实例方法
+![](attachments/Pasted%20image%2020220313173916.png)
+
+详情见https://www.bilibili.com/video/BV1Cv411372m?p=96
+
+
+<br/>
+<br/>
+
+<br/>
+<br/>
+
+###  static注意事项
+static访问注意事项：
+- 静态方法只能访问静态的成员，不可以直接访问实例成员。
+- 实例方法可以访问静态的成员，也可以访问实例成员。
+- 静态方法中是不可以出现this关键字的。
+
+静态成员：静态变量和静态方法
+实例成员：实例变量和实例方法
+
+```java
+/**  
+ * static 注意事项  
+ */  
+public class note {  
+    /**  
+ * 静态成员  
+ */  
+ public static int onlineNumber = 10;  
+ public static void test2(){  
+        System.out.println("====test2=====");  
+ }  
+  
+    /**  
+ * 实例成员  
+ */  
+ public String name;  
+ public void run(){  
+        System.out.println(name+"在跑步");  
+ }  
+  
+  
+    //1. 静态方法只能访问静态成员，不能**直接**访问实例成员  
+ public static void test1(){  
+        System.out.println(note.onlineNumber);  
+ System.out.println(onlineNumber);  
+ test2();  
+//        System.out.println(name);//报错，静态方法不能直接访问实例成员  
+//        run();//报错，静态方法不能直接访问实例成员  
+ }  
+  
+  
+    //2. 实例方法既可以访问静态成员，也可以访问实例成员  
+ public void go(){  
+        //访问静态成员  
+ test2();  
+ System.out.println(onlineNumber);  
+ //访问实例成员  
+ run();  
+ System.out.println(name);  
+  
+ //this可以出现在实例方法中  
+ System.out.println(this);  
+ }  
+  
+    //3. 静态方法不能有this关键字  
+ public static void testThis(){  
+//        System.out.println(this.name);//this 代表当前对象，而静态成员属于类，不依赖于对象  
+ }
+```
+
+<br/>
+<br/>
+
+## 4. static 应用知识：工具类
+工具类是什么？
+类中都是一些静态方法，每个方法都是以完成一个共用的功能为目的，这个类用来给系统开发人员共同使用的。
+可以自己设置定义工具类。
+
+
+
+案例导学：
+在企业的管理系统中，通常需要在一个系统的很多业务处使用验证码进行防刷新等安全控制。比如登陆，比如异常，比如确认。。。
+
+```java
+import java.util.Random;  
+  
+/**  
+ * 工具类  
+ */  
+public class StaticUtil {  
+    //静态方法，方便别人无对象调用  
+  
+ public static String generateVerifyCode(int n){  
+        String code = "";  
+ String data = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";  
+ Random r = new Random();  
+ for(int i=0; i<n; i++){  
+            int index = r.nextInt(data.length());//length正好比下标大1，满足包前不包后；  
+ code += data.charAt(index);  
+ }  
+        return code;  
+ }  
+  
+    //将构造器私有，外面就无法创建对象了  
+ private StaticUtil(){  
+  
+    }  
+}
+
+
+
+
+
+
+public static void main(String[] args) {
+//直接调用工具类  
+ System.out.println(StaticUtil.generateVerifyCode(5));  
+}
+```
+
+工具类使用场景：
+同一个功能， 很多处都要使用，不用工具类会使得代码重复度过高。
+
+使用工具类的好处
+1. 调用方便
+2. 提高了代码的复用性（一次编写处处可用）
+
+
+工具类中的方法不用实例方法而用静态方法的原因:
+实例方法需要创建对象才能调用
+而此时仅仅是为了调用方法才创建对象，会浪费内存
+静态方法用类名就可以调
+
+
+
+>注意:
+>由于工具类无需创建对象，建议将工具类的构造器私有化，禁止创建对象
+
+![](attachments/Pasted%20image%2020220315175053.png)
+
+
+<br/>
+<br/>
+
+###  工具类练习-数组工具类
+
+需求：在实际开发中，经常会遇到一些数组使用的工具类。请按照如下要求编写一个数组的工具类：ArraysUtils
+
+
+①：我们知道数组对象直接输出的时候是输出对象的地址的，而项目中很多地方都需要返回数组的内容，请在ArraysUtils中提供一个工具类方法toString,用于返回整数数组的内容，返回的字符串格式如：\[10,20,50,34,100](只考虑整数数组，且只考虑一维数组)
+
+②：经常需要统计平均值，平均值为去掉最低分和最高分后的分值，请提供这样一个工具方法getAverage,用于返回平
+均分。(只考虑浮点型数组，且只考虑一维数组)
+
+③：定义一个测试类TestDemo,调用该工具类的工具方法，并返回结果。
+
+
+```java
+public class ArraysUtil {  
+    //1. 私有构造器  
+ private ArraysUtil(){}  
+  
+    //2.输出数组内容方法toString  
+ public static String toString(int[] arr){  
+        if(arr==null){  
+            return null;  
+ }  
+        String str = "[";  
+ for(int i=0;i<arr.length; i++){  
+            str += i==arr.length-1? arr[i]:(arr[i]+",");  
+ }  
+        str +="]";  
+ return str;  
+ }  
+  
+    //3. 求数组平均值  
+ public static double getAverage(double[] arr){  
+        double average;  
+ double max = arr[0];  
+ double min = arr[0];  
+ double sum =arr[0];  
+  
+ for(int i=1; i<arr.length; i++){  
+            if(arr[i]>max){  
+                max = arr[i];  
+ }  
+            if(arr[i]<min) {  
+                min = arr[i];  
+ }  
+            sum +=arr[i];  
+ }  
+        average = (sum-min-max)/(arr.length-2);  
+ return average;  
+ }
+```
+测试
+```java
+public static void main(String[] args) {  
+    int[] arr1 = null;  
+ int[] arr2 = {};  
+ int[] arr3 = {10, 20, 30};  
+ double[] arr4 = {11.1, 22.2, 33.3};  
+ double[] arr5 = {11.0, 22.0, 33.0, 44.0};  
+  
+ System.out.println(ArraysUtil.toString(arr1));//null  
+ System.out.println(ArraysUtil.toString(arr2));//[]  
+ System.out.println(ArraysUtil.toString(arr3));//[10,20,30]  
+  
+ System.out.println(ArraysUtil.getAverage(arr4));//22.199999999999996  
+ System.out.println(ArraysUtil.getAverage(arr5));//27.5  
+}
+```
+
+
+<br/>
+<br/>
+
+## 5. static 应用：代码块
+
+1. 代码块概述
+
+- 代码块是类的5大成分之一***(成员变量、构造器，方法，代码块，内部类)，定义在类中方法外***。
+
+- 在Java类下，使用<font color=red> ***{ }*** </font>括起来的代码被称为代码块。（注意不是在定义方法的时候用的大括号，就是单独的大括号）
+
+
+
+2. 代码块分为：
+
+- 静态代码块：
+	- 格式：<font color=red> ***static { }*** </font>
+	
+	- 特点：需要通过static关键字修饰，随着类的加载而***优先***加载，并且自动触发、只执行一次（自动跑一次）。
+	-  使用场景：在类加载的时候做一些静态数据初始化的操作，以便后续使用。
+
+<br/>
+<br/>
+
+
+- 构造代码块(也叫实例代码块)：
+	- 格式：<font color=red> ***{ }*** </font>
+	- 特点：***每次创建对象，调用构造器执行时，都会执行该代码块中的代码，并且在构造器执行前执行。***
+	- 使用场景：初始化实例资源。
