@@ -6653,6 +6653,28 @@ public static void main(String[] args) {
 	- 特点：需要通过static关键字修饰，随着类的加载而***优先***加载，并且自动触发、只执行一次（自动跑一次）。
 	-  使用场景：在类加载的时候做一些静态数据初始化的操作，以便后续使用。
 
+```java
+public static void main(String[] args) {  
+    System.out.println("--------main方法执行-----------");  
+}  
+  
+  
+  
+  
+/**  
+ * 静态代码块，有static修饰， 属于类，随着类加载而优先加载，自动执行一次  
+ * 作用：用于初始化静态资源  
+ */  
+static {  
+    System.out.println("——————————静态代码块被触发执行———————————");  
+}
+
+结果：
+——————————静态代码块被触发执行———————————
+--------main方法执行-----------
+```
+
+
 <br/>
 <br/>
 
@@ -6661,3 +6683,1340 @@ public static void main(String[] args) {
 	- 格式：<font color=red> ***{ }*** </font>
 	- 特点：***每次创建对象，调用构造器执行时，都会执行该代码块中的代码，并且在构造器执行前执行。***
 	- 使用场景：初始化实例资源。
+
+
+```java
+public class StaticDemo2 {  
+    //理解实例代码块（构造代码块）  
+  
+ private String name;  
+ /**  
+ * 实例代码块: 无static修饰， 属于对象， 每次构造对象时都会触发一次，并在构造器前执行  
+ */  
+ {  
+        name = "TOM";  
+ System.out.println("======实例代码块被触发======");  
+ }  
+  
+    public StaticDemo2(){  
+        System.out.println("————————————无参构造器——————————————");  
+ }  
+  
+  
+    public static void main(String[] args) {  
+        System.out.println("-------main方法--------");  
+ //创建一个新的对象  
+ StaticDemo2 ob = new StaticDemo2();  
+System.out.println(ob.name);  
+StaticDemo2 ob2 = new StaticDemo2();  
+System.out.println(ob2.name);
+  
+ }  
+  
+}
+
+结果：
+-------main方法--------
+======实例代码块被触发======
+————————————无参构造器——————————————
+TOM
+======实例代码块被触发======
+————————————无参构造器——————————————
+TOM
+```
+
+一般不用，因为我们希望每个对象的name是不一样的，但是实例代码块确实可以用来初始化实例资源。
+
+<br/>
+<br/>
+
+
+### 静态代码块的应用
+
+需求：
+在启动游戏房间的时候，应该提前准备好54张牌，后续才可以直接使用这些牌数据。
+
+
+分析：
+①该房间只需要一副牌。
+②定义一个静态的ArrayList:集合存储54张牌对象，静态的集合只会加载一份。
+③在启动游戏房间前，应该将54张牌初始化好
+④当系统启动的同时需要准备好54张牌数据，此时可以用静态代码块完成。
+
+>为什么用静态的集合：因为从头到尾只需要一副牌，可以被共享，访问，所以用静态的集合
+
+
+>为什么用静态代码块：因为要在游戏房间加载的时候就完成初始化，游戏运行前完成， 静态代码块随着类加载而加载，在main方法前执行，自动触发，执行一次。
+
+> 为什么不直接初始化静态变量：当静态变量的初始化非常复杂的时候，就可以用静态代码块初始化
+
+> 为什么不放在main方法里：为了节省资源，main方法里可能会跑很多次，静态代码块只会跑一次。
+
+
+案例：
+
+```java
+public class StaticDemo3 {  
+    //1. 定义一个静态集合装54张牌, 内存中只存一个  
+ //成员变量是cards  
+ public static ArrayList<String> cards = new ArrayList<>();  
+  
+ //2. 在程序运行main方法前初始化， 把54张牌放进去，后续游戏就可以用--静态代码块  
+ static{  
+        //1. 准备牌，分花色，点数  
+ //2. 步骤：定义一个数组存储全部点数,再定义一个数组存储花色类型， 类型+点数都确定-->确定牌  
+ String[] num = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};  
+ String[] colors = {"♥", "♠", "♦", "♣"};  
+ //3.组合：先遍历数字，再遍历花色，就会是四个花色的2,3,4这样排列,只需要准备好，不需要打乱顺序  
+ for(int i=0; i< num.length; i++){  
+            for(int j = 0; j< colors.length; j++){  
+                cards.add(colors[j]+num[i]);  
+ }  
+        }  
+        //4. 加上大小王  
+ cards.add("小王");  
+ cards.add("大王");  
+ }  
+  
+    public static void main(String[] args) {  
+        System.out.println(cards);  
+ }  
+}
+
+
+结果：
+
+```
+
+
+<br/>
+<br/>
+
+
+
+<br/>
+<br/>
+
+# static应用--单例设计模式 Singleton Design Pattern
+
+什么是设计模式(Design pattern)
+
+- 通俗来说就是开发中经常遇到一些问题，一个问题通常有N种解法的，但其中肯定有一种解法是最优的，这个最优的解法被人总结出来了，称之为设计模式。
+
+设计模式（Design Pattern）是前辈们对代码开发经验的总结，是解决特定问题的一系列套路。
+
+
+- 设计模式有20多种，对应20多种软件开发中会遇到的问题。
+
+
+- 学设计模式主要是学2点：
+>第一：这种模式用来解决什么问题。
+>第二：遇到这种问题了，该模式是怎么写的，他是如何解决这个问题的。
+
+
+- 设计模式的三个分类
+- **创建型模式：对象实例化的模式，创建型模式用于解耦对象的实例化过程。**
+
+- **结构型模式：把类或对象结合在一起形成一个更大的结构。**
+
+- **行为型模式：类和对象如何交互，及划分责任和算法。**
+
+
+![](attachments/Pasted%20image%2020220320201857.png)
+
+<br/>
+<br/>
+
+
+## 单例模式
+
+ 可以保证系统中，应用该模式的这个类永远只有一个实例，即一个类永远只能创建一个对象。
+
+
+例如任务管理器对象我们只需要一个就可以解决问题了，这样可以节省内存空间。在计算机系统中，线程池、缓存、日志对象、对话框、打印机、显卡的驱动程序对象也常被设计成单例。这些应用都或多或少具有资源管理器的功能。
+
+
+- 单例的实现方式很多
+	- 饿汉单例模式。
+	- 懒汉单例模式。
+	- 。。。
+
+
+
+
+<br/>
+<br/>
+
+
+## 饿汉单例设计模式
+
+
+在用类获取对象的时候，对象已经提前为你创建好了。(预先加载法)
+
+(饿汉急着吃，饭已经做好了)----对象已经提前准备好。
+
+
+
+### 设计步骤：
+1. 定义一个类，把构造器私有。为了不让人从外部随意访问构造器，创建对象。
+
+
+2. 定义一个静态变量存储一个对象。--必须得对外提供一个对象，并且饿汉单例模式是在获取对象前，对象就已经准备好了，因此这个对象可以定义为静态变量，因为静态变量当且仅当在类初次加载时会被加载一次。
+实现：new一个对象，并把他设为public static修饰的静态变量。
+
+3. 外部需要单例模式的对象的时候，直接调用静态成员变量即可。
+调用：数据类型 + 变量名 = 类名.静态变量名
+
+
+```java
+public class SingleInstance {  
+    //1. 构造器私有化  
+ private SingleInstance(){};  
+  
+ //2. 准备对象静态成员变量，随着类加载自动加载一次--满足饿汉单例在获取对象前对象就准备好了  
+ public static SingleInstance instance = new SingleInstance();  
+}
+```
+
+```java
+public class Test {  
+//    SingleInstance s = new SingleInstance();//报错,私有不能创建对象  
+public static void main(String[] args) {  
+    SingleInstance s1 = SingleInstance.instance;  
+ SingleInstance s2 = SingleInstance.instance;  
+ System.out.println(s1==s2);//true,说明s1 s2是同一个对象  
+}  
+}
+```
+
+优点：
+1. 这种写法比较简单，就是在类装载的时候就完成实例化。避免了线程同步问题，线程安全的。
+
+2. 在类加载的同时已经创建好一个静态对象,调用时反应速度快。
+
+
+缺点：
+1. 在类装载的时候就完成实例化，没有达到Lazy Loading的效果。如果从始至终从未使用过这个实例，则会造成内存的浪费。  
+
+
+<br/>
+<br/>
+
+## 懒汉单例设计模式
+懒汉单例设计模式(**initialization on demand**)
+在真正需要该对象的时候，才去创建一个对象（延迟加载对象）。
+
+就是说懒汉都是事情攒到必须要干的时候才干
+
+### 设计步骤：
+1. 定义一个类，把构造器私有。
+2. 定义一个静态变量存储一个对象。（注意私有化， 防止别人通过类名去调用，这样有可能调用到空的）
+3. 提供一个返回单例对象的静态方法，判断对象不存在才创建一次，存在直接返回
+
+> 为什么一定要提前准备一个静态变量，既然不是饿汉单例， 调用的时候在方法里生成一个不行吗？ NONONO， 如果把生成对象放在方法里，每调用一次生成一个新的对象，这样就不是单例模式了。
+
+> 静态变量保证了在内存中有且只有一份。而且静态变量不属于任何对象。但实例变量只属于它的那个对象。
+
+> 为什么要用静态方法， 因为懒汉单例模式调用的时候还没有对象，想要通过类来调用，必须用静态方法，同时这里也强调了上面必须是静态变量，静态方法只能访问静态变量。
+
+
+```java
+public class Singleton2 {  
+    //1. 单例模式必须构造器私有  
+ private Singleton2(){}  
+    //2. 定义一个静态变量只存储一份  
+ private static Singleton2 instance;//默认值null  
+  
+ //3. 提供一个方法，返回单例对象  
+ public static Singleton2  getInstance(){  
+        if(instance == null) {  
+            instance = new Singleton2();  
+ }  
+        return instance;  
+ }  
+}
+```
+
+```java
+public class Test2 {  
+    public static void main(String[] args) {  
+         Singleton2 s1 = Singleton2.getInstance();  
+		 Singleton2 s2 = Singleton2.getInstance();  
+		 System.out.println(s1==s2);//true  
+ }  
+}
+```
+
+这种写法起到了Lazy Loading的效果，但是只能在单线程下使用。如果在多线程下，一个线程进入了if (singleton == null)判断语句块，还未来得及往下执行，另一个线程也通过了这个判断语句，这时便会产生多个实例。所以在多线程环境下不可使用这种方式。
+
+
+<br/>
+<br/>
+
+<br/>
+<br/>
+
+# 面向对象三大特征之二：继承
+
+## 1. 继承概述
+什么是继承？
+Java中提供一个关键字extends,用这个关键字，我们可以让一个类和另一个类建立起父子关系。
+```ad-def
+class 子类 extends 父类 {}
+```
+![](attachments/Pasted%20image%2020220321161552.png)
+
+![](attachments/Pasted%20image%2020220321161605.png)
+
+Student称为子类（派生类），People称为父类（基类或超类）。
+
+作用：当子类继承父类后，就可以直接使用父类公共的属性和方法了
+
+好处：代码更加简洁，提高代码的复用性（复用性主要是可以多次使用，不用再多次写同样的代码），维护性也提高（维护性提高主要是后期需要修改的时候，不需要修改很多的代码，不容易出错），增强类的功能扩展性（子类继承了父类的功能， 功能就扩展了）
+
+> 注意：Java中子类是更强大的（既有自己的功能，又有父类的功能）
+
+![](attachments/Pasted%20image%2020220322215813.png)
+
+![](attachments/Pasted%20image%2020220322215933.png)
+
+```java
+/**  
+ * 人类：父类  
+ */  
+public class People {  
+    public void run(){  
+        System.out.println("人会跑");  
+ }  
+}
+
+/**  
+ * 学生类： 子类  
+ */  
+  
+public class Student extends People{  
+}
+
+
+/**  
+ * 认识继承， 明确继承的好处  
+ */  
+public class Test01 {  
+    public static void main(String[] args) {  
+        Student s = new Student();  
+ s.run();//子类Student类可以调用父类People的方法  
+ }  
+  
+}
+```
+
+
+<br/>
+<br/>
+
+## 2. 继承设计规范，内存原理
+继承设计规范：
+- 子类们相同特征(共性属性，共性方法)放在父类中定义，子类独有的的属性和行为应该定义在子类自己里面。
+
+
+为什么？
+- 如果子类的独有属性、行为定义在父类中，会导致其它子类也会得到这些属性和行为，这不符合面向对象逻辑。
+
+
+案例：
+![](attachments/Pasted%20image%2020220323172724.png)
+
+需求：
+在传智教育的tlias教学资源管理系统中，存在学生、老师角色会进入系统。
+
+分析：
+学生信息和行为(==名称，年龄==，所在班级，==查看课表==，填写听课反馈)
+老师信息和行为(==名称，年龄==，部门名称，==查看课表==，发布问题)
+
+
+定义角色类作为父类：包含属性(名称，年龄)，行为（查看课表）
+定义子类：学生类包含属性（所在班级），行为（填写听课反馈）
+定义子类：老师类包含属性（部门名称），行为（发布问题）
+
+
+```java
+/**  
+ * 父类：包含属性：名称，年龄，  
+ * 包含行为： 查看课表  
+ */  
+public class People {  
+    private String name;  
+ private int age;  
+  
+ public void setName(String name){  
+        this.name = name;  
+ }  
+    public String getName(){  
+        return name;  
+ }  
+  
+    public void setAge(int age){  
+        this.age = age;  
+ }  
+    public int getAge(){  
+        return age;  
+ }  
+    // 方法：查看课表  
+ public void queryCourse(){  
+        System.out.println(name +"在查看课表" );  
+ }  
+}
+```
+
+```java
+
+/**  
+ * 子类：学生类，直接使用公用的父类的属性和方法  
+ * 添加自己独有的属性：所在班级  
+ * 方法：填写听课反馈  
+ */
+
+public class Student extends People {  
+    private String classNum;  
+  
+ public void setClassNum(String classNum){  
+        this.classNum = classNum;  
+ }  
+    public String getClassNum(){  
+        return classNum;  
+ }  
+  
+    public void feedBack(){  
+        System.out.println(getName()+"学习很愉快~~~");//父类name虽然是私有，但是方法都是公共的  
+ }  
+}
+
+```
+
+```java
+/**  
+ * 理解继承的设计思想  
+ */  
+public class Test {  
+    public static void main(String[] args) {  
+        Student s = new Student();  
+ s.setName("小明");//父类的setName方法  
+ s.setAge(20);  
+ System.out.println(s.getName());  
+ System.out.println(s.getAge());  
+  
+ s.queryCourse();//父类的方法  
+ s.feedBack();//子类的方法  
+ }  
+}
+```
+### 继承内存图
+
+![](attachments/Pasted%20image%2020220323180109.png)
+>注意实际上父类空间和子类空间不是并排的，整体对外是一个对象
+
+>在内存中，子类对象空间里包裹着一个父类空间， 子类空间是大圆，父类空间是小圆，共同的方法写在小圆里， 子类的写在大圆里，找变量的时候 **先去子类找方法，能找到就使用，如果找不到，再去父类中找。**
+
+```java
+/**  
+ * 理解继承的设计思想  
+ */  
+public class Test {  
+    public static void main(String[] args) {  
+        Student s = new Student();  
+ s.setName("小明");//父类的setName方法  
+ s.setAge(20);  
+ System.out.println(s.getName());  
+ System.out.println(s.getAge());  
+  
+ s.queryCourse();//父类的方法  
+ s.feedBack();//子类的方法  
+ }  
+}
+```
+执行流程
+1：虚拟机加载Test类，提取类型信息到方法区。
+
+2：通过保存在方法区的字节码，虚拟机开始执行main方法，main方法入栈。
+
+3：执行main方法的第一条指令，Student s = new Student(); 这句话就是给Student实例对象分配堆空间。
+
+ 因为Student继承People父类，所以，虚拟机首先加载People类到方法区，并在堆中为父类成员变量在子类空间中初始化。
+ 
+ 然后加载Student类到方法区，为Student类的成员变量分配空间并初始化默认值。将Student类的实例对象地址赋值给引用变量s。
+
+==初始化的时候：先父类后子类（先有爸爸后有儿子）==
+![](attachments/Pasted%20image%2020220323175904.png)
+
+4： 调用方法的时候：先去子类空间（大圆里）找遍变量，方法，找不到再去父类空间（小圆里）找变量，方法
+（儿子长大了，有问题先找儿子，再找爸爸）
+
+
+<br/>
+<br/>
+
+## 3. 继承的特点
+继承的特点
+①子类可以继承父类的属性和行为，但是子类不能继承父类的构造器。
+②Java是单继承模式：一个类只能继承一个直接父类。
+③Java不支持多继承、但是支持多层继承。(儿子->爸爸->爷爷)
+④Java中所有的类都是Object类的子类。
+
+1. 子类不能继承父类的构造器，它有自己的构造器，父类构造器只能用于初始化父类对象。
+
+
+2. 子类能否继承父类的private成员？
+***可以继承， 但无法直接访问*** 就是说这个东西确实有， 但无法直接使用
+![](attachments/Pasted%20image%2020220323191129.png)
+
+3. 子类是否可以继承父类的静态成员？子类名.父类静态成员变量名
+可以使用， 不算继承，只是共享
+**无论是static修饰的变量，还是static修饰的方法，我们都知道他们是属于类本身的**，当子类没有与之同名的static变量（或方法时），子类的对象也可以操控这块父类内存空间。但是子类并没有继承父类中static修饰的变量和方法。因为static修饰的变量和方法是属于父类本身的。
+
+4. 子类不支持多继承的原因
+为了防止从两个或多个父类中继承到的方法或属性冲突。
+![](attachments/Pasted%20image%2020220323192042.png)
+
+5. Java多重继承的时候产生冲突怎么办
+假如父类， 和父类的父类里有相同的方法， 就近选择父类的。
+
+6. Object类：
+Java中所有类，要么直接继承了Object,要么默认继承了Object, 要么间接继承了Object, Object是祖宗类。
+
+![](attachments/Pasted%20image%2020220323192431.png)
+
+<br/>
+<br/>
+
+## 4. 继承后，成员变量和成员方法的特点
+
+在子类方法中访问成员(成员变量、成员方法)满足：***就近原则***
+先子类局部范围找
+然后子类成员范围找
+然后父类成员范围找，如果父类范围还没有找到则报错。
+
+1. 访问成员方法
+```java
+public class Test {  
+    //继承后成员的访问特点：就近原则  
+ public static void main(String[] args) {  
+        Dog d = new Dog();  
+ d.run();//就近调子类方法：狗会跑  
+ d.eat();//子类没有调父类  动物要吃东西
+ }  
+  
+}
+
+
+
+class Animal{  
+    public void run(){  
+        System.out.println("动物可以跑~");  
+ }  
+  
+    public void eat(){  
+        System.out.println("动物要吃东西");  
+ }  
+}
+
+
+class Dog extends Animal{  
+    public void run(){  
+        System.out.println("狗会跑");  
+ }  
+}
+```
+
+2. 访问变量
+
+局部变量：定义在方法里
+成员变量：定义在类中，方法外
+
+```java
+public class Test {  
+    //继承后成员的访问特点：就近原则  
+ public static void main(String[] args) {  
+        Dog d = new Dog();  
+ d.showName();//局部变量  
+ d.showName();//如果注释掉局部变量， 结果是：成员变量  
+ d.showName();//如果再注释掉成员变量， 结果就是父类成员变量  
+ }  
+  
+}
+
+class Animal{  
+     public String name = "父类成员变量";  
+}
+
+
+
+class Dog extends Animal{  
+ public String name = "成员变量";  
+ public void showName(){  
+        String name = "局部变量";  
+		System.out.println(name);  
+ }  
+}
+```
+
+
+如果子父类中，出现了重名的成员，会优先使用子类的，此时如果一定要在子类中使用父类的怎么办？
+>可以通过super关键字，***在子类方法中***指定访问父类的成员。
+
+```ad-def
+super.父类成员变量名/方法名
+```
+
+如果一定要访问子类的成员变量，用this代表当前对象
+
+```java
+public class Test {  
+    //继承后成员的访问特点：就近原则  
+ public static void main(String[] args) {  
+        Dog d = new Dog();
+		d.showName();
+  }
+}
+
+
+class Animal{  
+    public void run(){  
+        System.out.println("动物可以跑~");  
+ }  
+  
+    public void eat(){  
+        System.out.println("动物要吃东西");  
+ }  
+  
+    public String name = "父类成员变量";  
+}
+
+
+
+
+
+
+class Dog extends Animal{  
+public String name = "成员变量";
+
+public void run(){  
+    System.out.println("狗会跑");  
+}
+
+ public void showName(){  
+        String name = "局部变量";  
+ System.out.println(name);  
+ System.out.println(this.name);//在有局部变量的情况下，想要访问子类的成员变量，用this  
+ System.out.println(super.name);//想要访问父类成员变量，用super  
+  
+ run();//子类的run：狗会跑  
+ super.run();//指定父类的run：动物可以跑~  
+ }  
+}
+
+
+
+输出结果
+局部变量
+成员变量
+父类成员变量
+狗会跑
+动物可以跑~
+```
+
+<br/>
+<br/>
+
+## 5. 继承后方法重写
+
+什么是方法重写？
+在继承体系中，子类出现了和父类中一模一样的方法声明，我们就称子类这个方法是重写的方法。
+
+
+方法重写的应用场景
+当子类需要父类的功能，但父类的该功能不完全满足自己的需求时，子类可以重写父类中的方法。
+
+
+案例：
+- 旧手机的功能只能是基本的打电话，发信息
+- 新手机的功能需要能够：基本的打电话下支持视频通话。基本的发信息下支持发送语音和图片。
+
+```java
+public class Test {  
+    //目标：认识方法重写  
+ public static void main(String[] args) {  
+        //创建一个新手机（子类对象）  
+ NewPhone p1 = new NewPhone();  
+ p1.call();//打电话  
+ // 开始视频通话  
+ p1.sendMsg();//发短信  
+ // 发图片发语音  
+ }  
+  
+}  
+  
+/**  
+ * 旧手机：父类  
+ */  
+class phone{  
+    public void call(){  
+        System.out.println("打电话");  
+ }  
+  
+    public void sendMsg(){  
+        System.out.println("发短信");  
+ }  
+}  
+  
+/**  
+ * 新手机：子类  
+ */  
+  
+class NewPhone extends phone{  
+    //要求在旧手机功能的基础上加新的功能，以前的功能也要保留  
+ public void call(){//这个call方法就是重写的方法  
+ super.call();//先调用一次父类的功能  
+ System.out.println("开始视频通话");  
+ }  
+  
+    //重写的方法  
+ public void sendMsg(){  
+        super.sendMsg();  
+ System.out.println("发图片发语音");  
+ }  
+}
+```
+
+### @Override重写注解（注意大写）
+@Override是放在重写后的方法上，作为重写是否正确的校验注解。
+- 加上该注解后如果重写错误，编译阶段会出现错误提示。
+- 建议重写方法都加@Override注解，代码安全，可读性好，更优雅！
+
+例如
+```java
+class NewPhone extends phone{  
+    //要求在旧手机功能的基础上加新的功能，以前的功能也要保留  
+ // 这个call方法就是重写的方法  
+ @Override  
+ public void call(){  
+        super.call();//先调用一次父类的功能  
+ System.out.println("开始视频通话");  
+ }  
+  
+    //重写的方法  
+ @Override//重写校验注解，加上后方法必须是正确重写的，这样更安全  
+ public void sendMsg(){  
+        super.sendMsg();  
+ System.out.println("发图片发语音");  
+ }  
+}
+```
+
+方法重写错误的时候会报错，例如名字没有和父类方法一样
+![](attachments/Pasted%20image%2020220326210235.png)
+
+### 方法重写的注意事项和要求
+
+1. 重写方法的***名称、形参列表***必须与被重写方法的名称和参数列表一致。
+2. 私有方法（private）不能被重写。
+3. 子类重写父类方法时，访问权限必须大于或者等于父类(暂时了解：缺省<protected<public)(儿子要比父亲更开放)
+4. 子类不能重写父类的静态方法，如果重写会报错的。
+这个的原因是只有真正继承的方法才能被重写， 静态成员并不能被继承，所以这里也无从谈起重写。如果不能继承一个类，则不能重写该类的方法。
+5. 同样，构造器无法被继承，也无法被重写。
+
+
+## 6. 继承后，子类构造器的特点
+首先明确，子类不可以继承父类的构造器[3 继承的特点](#3%20继承的特点)
+
+那子类继承父类之后， 它的构造器有什么特点呢？
+
+1. 子类中全部的构造器（无参，有参）每次默认都会先访问父类中无参的构造器，再执行自己。
+
+也就是每new一个对象， 都要执行两个构造器，先父类无参，后子类
+
+```java
+
+/**  
+ * 父类 animal  
+ */public class Animal {  
+    public Animal(){  
+        System.out.println("----父类Animal无参构造器执行-------");  
+ }  
+}  
+  
+/**  
+ * 子类: Dog  
+ */  
+class Dog extends Animal{  
+    public Dog(){  
+        System.out.println("==================子类Dog无参构造器================");  
+ }  
+  
+    public Dog(String name){  
+        System.out.println("！！！！！！子类Dog有参构造器！！！！");  
+ }  
+  
+}
+
+
+public class Test {  
+    // 认识继承后， 子类构造器的特点  
+ //子类中全部的构造器（无参，有参）默认都会先访问父类中无参的构造器，再执行自己  
+ public static void main(String[] args) {  
+        //调用子类构造器创建一个Dog 对象  
+ Dog d1 = new Dog();  
+  
+ Dog d2 = new Dog("TOM");  
+  
+ Dog d3 = new Dog();  
+ }  
+  
+}
+
+
+输出结果
+----父类Animal无参构造器执行-------
+==================子类Dog无参构造器================
+----父类Animal无参构造器执行-------
+！！！！！！子类Dog有参构造器！！！！
+----父类Animal无参构造器执行-------
+==================子类Dog无参构造器================
+
+```
+
+
+原因：
+子类在初始化的时候，有可能会使用到父类中的数据，如果父类没有完成初始化，子类将无法使用父类的数据。
+所以子类初始化之前，一定要调用父类构造器先完成父类数据空间的初始化。[继承内存图](#继承内存图)
+
+
+怎么调用父类构造器的？
+子类构造器的第一行语句默认都是：super(); 调用父类的无参数构造器
+不写也存在。
+```java
+class Dog extends Animal{  
+    public Dog(){  
+        //第一行默认是super();访问父类的无参构造器  
+ super();  
+ System.out.println("==================子类Dog无参构造器================");  
+ }  
+  
+    public Dog(String name){  
+        super();  
+ System.out.println("！！！！！！子类Dog有参构造器！！！！");  
+ }  
+  
+}
+```
+
+**可以在子类构造器中通过super(…)添加参数，  
+根据参数选择调用父类的构造器，以便调用父类构造器初始化继承自父类的数据。**
+
+这里super();的用法是引用构造器
+
+super（参数）：调用父类中的某一个构造函数（应该为构造函数中的第一条语句）。
+
+类似的还有
+this（参数）：调用本类中另一种形式的构造函数（应该为构造函数中的第一条语句）。[3 在构造器中使用this 调用其他构造器](#3%20在构造器中使用this%20调用其他构造器)
+
+<br/>
+<br/>
+
+
+## 7. 继承后，子类构造器访问父类的有参构造器
+super调用父类有参数构造器的作用：
+***通过调用父类有参数构造器来初始化继承自父类的数据***
+
+```java
+/**  
+ * 父类： 人类  
+ */  
+class People{  
+    private String name;  
+ //get set 方法  
+ public void setName(String name){  
+        this.name = name;  
+ }  
+    public String getName(){  
+        return name;  
+ }  
+    //无参构造器  
+ public People(){  
+        System.out.println("父类无参构造器");  
+ }  
+    //有参构造器  
+ public People(String name){  
+        this.name = name;  
+ System.out.println("父类有参构造器~~~~");  
+ }  
+}  
+  
+/**  
+ * 子类：老师类  
+ */  
+class Teacher extends People{  
+    //有参构造器  
+ public Teacher(String name){  
+    //注意，无法继承父类的private成员，所以无法赋值  
+ //可以让子类的有参构造器，调用父类的有参构造器，来进行赋值  
+ super(name);  
+ System.out.println("子类有参构造器~~~~~~~");  
+ }  
+  
+ //注意有参构造器会覆盖无参构造器，单写一个无参的  
+ public Teacher(){  
+        System.out.println("---子类无参构造器");  
+ }  
+}
+
+
+
+public class Test {  
+    //目的：学习子类构造器访问父类有参构造器，及其作用  
+ public static void main(String[] args) {  
+        //----------方法一------------  
+ //创建子类对象  
+ Teacher t = new Teacher();//无参构造器  
+ //继承了父类的get, set方法  
+ t.setName("李老师");  
+ System.out.println(t.getName());  
+  
+ //方法二  
+ //定义子类有参构造器，内部super访问父类的有参构造器  
+ Teacher t2 = new Teacher("小明");  
+ System.out.println(t2.getName());  
+ }  
+}
+
+输出结果：
+父类无参构造器
+---子类无参构造器
+李老师
+父类有参构造器~~~~
+子类有参构造器~~~~~~~
+小明
+```
+
+
+
+结论：
+1. 方法一： new一个新对象+ set方法
+和方法二：通过子类有参构造器new是完全相同的
+
+2. 可以看见，子类构造器默认先调用父类构造器，在调用自己，当子类构造器中super(参数)指明参数后，就不是调用默认的无参构造器，而是有参构造器
+
+3. 如果父类没有无参构造器，只有有参构造器会怎么样？
+结果是子类的无参构造器会报错！！因为它必须调用父类的无参构造器。所以千万别忘了写无参构造器！！！！
+
+
+
+<br/>
+<br/>
+
+## 8. this， super总结
+this和super详情：
+
+- this:代表本类对象的引用；[this 用法](#this%20用法)
+- super:代表子类对象中父类存储空间的标识。
+
+![](attachments/Pasted%20image%2020220326231004.png)
+
+
+this(..)和super(.…)使用注意点：
+
+- 注意：this(), super（）都只能放在构造器的第一行，所以二者不能共存在同一个构造器中。
+
+- 两者都想要的时候，写this（）， 因为子类通过this(.…)去调用本类的其他构造器，本类其他构造器会通过super去手动调用父类的构造器，最终还是会调用父类构造器的。
+
+<br/>
+<br/>
+
+
+## Java 类的初始化顺序
+
+![](attachments/Pasted%20image%2020220326233434.png)
+
+1. 父类静态变量， 静态代码块（并列优先级，按代码中出现先后顺序执行）（只有第一次加载类时执行）
+2. 子类静态变量， 静态代码块（并列优先级，按代码中出现先后顺序执行）（只有第一次加载类时执行）
+3. 父类实例变量，普通代码块（并列优先级，按代码中出现先后顺序执行）
+4. 父类构造函数
+5. 子类实例变量，普通代码块（并列优先级，按代码中出现先后顺序执行）
+6. 子类构造函数
+
+```java
+
+public class ExA {  
+
+    static {  
+
+        System.out.println("父类--静态代码块");  
+
+    }  
+
+    public ExA() {  
+
+        System.out.println("父类--构造函数");  
+
+    }  
+
+    {  
+
+        System.out.println("父类--非静态代码块");  
+
+    }  
+
+
+}  
+
+class ExB extends ExA {  
+
+    static {  
+
+        System.out.println("子类--静态代码块");  
+
+    }  
+
+    {  
+
+        System.out.println("子类--非静态代码块");  
+
+    }  
+
+    public ExB() {  
+
+        System.out.println("子类--构造函数");  
+
+    }  
+
+public static void main(String[] args) {  
+
+        new ExB();  
+
+    }  
+
+}  
+
+
+  
+执行结果 
+
+===== 
+
+父类--静态代码块 
+
+子类--静态代码块 
+
+父类--非静态代码块 
+
+父类--构造函数 
+
+子类--非静态代码块 
+
+子类--构造函数
+
+```
+
+new一个B对象，先初始化它的父类（父类静态代码块），再初始化它自己（子类静态代码块），因为子类构造器会默认先访问父类构造器， 而实例代码块每次构造对象都会执行一次，并且在构造器之前，所以要先初始化父类的实例资源（父类实例代码块）， 后面接着就是父类构造器，然后再子类实例代码块， 子类构造器
+
+
+<br/>
+<br/>
+
+<br/>
+<br/>
+
+# 包，权限修饰符
+## 1. 包
+
+
+1. 包是用来分门别类的管理各种不同类的，类似于文件夹、建包利于程序的管理和维护。
+2. 建包的语法格式：package 公司域名倒写.技术名称 。报名建议全部英文小写，且具备意义
+例如：package com.itheima.javabean;
+3. 包语句必须在第一行，一般IDEA工具会帮助创建
+
+
+## 2. 导包
+ 1. 相同包下的类class可以直接访问，用类名.变量名的方式
+2. 不同包下的类必须导包，才可以使用！
+导包格式：
+```ad-def
+import 包名.类名；
+```
+![](attachments/Pasted%20image%2020220403154805.png)
+
+```java
+package d1_package;   
+import d1_package.zibao.Student;
+public class Test {  
+    //目标：1. 相同包下的类可以互相访问 , 类名.  
+ //目标：2. 不同包下的类需要导包  
+  
+ //1  
+ public static void main(String[] args) {  
+        System.out.println(User.onlineNumber);  
+ }  
+  
+    //2.test在d1包中，学生类在子包中， 不在一个包  
+ Student s = new Student();
+}
+
+
+//1. 相同包
+
+package d1_package;  
+  
+public class User {  
+    public static int onlineNumber = 120;  
+}
+
+
+//2. 不同包
+package d1_package.zibao;  
+  
+public class Student {  
+    //学生类在子包中  
+}
+
+
+
+```
+3. 如果一个类想使用不同包（>1）中名字相同的多个类， 这时只允许导入一个包， 剩下的要用包名.类名的形式去访问
+```java
+//想用zibao2的学生类  
+d1_package.zibao2.Student s2 = new d1_package.zibao2.Student();
+```
+
+
+
+<br/>
+<br/>
+
+## 3. 权限修饰符
+
+- 权限修饰符：是用来控制一个成员能够被访问的范围。
+
+- 可以修饰==成员变量，方法，构造器，内部类，==不同权限修饰符修饰的成员能够被访问的范围将受到限制。
+
+### 权限修饰符的分类和范围
+private < 缺省（就是没有） < protected < public
+
+![](attachments/Pasted%20image%2020220403160302.png)
+
+-   **private** : 在同一类内可见。使用对象：变量、方法。 **注意：不能修饰类（外部类）**
+    
+-   **default** (即默认，什么也不写）: 在同一包内可见，不使用任何修饰符。使用对象：类、接口、变量、方法。
+    
+-   **protected** : 对同一包内的类和其他包的子类可见。使用对象：变量、方法。 **注意：不能修饰类（外部类）**。注意其他包访问的时候，要通过子类访问，不可以通过父类访问，是继承过去的
+
+-   **public** : 对所有类可见。使用对象：类、接口、变量、方法
+
+
+![](attachments/Pasted%20image%2020220403180635.png)
+
+1. 同一类中
+```java
+package d2_modifier.zibao;  
+  
+public class Father {  
+    /**  
+ * 1. 定义私有成员private：在同一类内可见。  
+ */  
+ private void privateMethod(){  
+        System.out.println("private");  
+ }  
+  
+    /**  
+ * 2. default（缺省）：在在同一包内可见， 包访问权限  
+ */  
+ void method(){  
+        System.out.println("缺省");  
+ }  
+  
+    /**  
+ * 3. protected : 本类， 同一包中其他类， 其他包中子类  
+ */  
+  
+ protected void protectedMethod(){  
+        System.out.println("protected");  
+ }  
+  
+    /**  
+ * 4. public : 本类， 同一包中其他类， 其他包中的子类， 其他包中其他类  
+ */  
+ public void publicMethod(){  
+        System.out.println("public");  
+ }  
+  
+  
+    //在本类中  
+ public static void main(String[] args) {  
+        //在同一类中要访问非静态方法，要先创建对象  
+ Father f = new Father();  
+ f.privateMethod();  
+ f.method();  
+ f.protectedMethod();  
+ f.publicMethod();  
+ }  
+}
+```
+
+2. 同一包中其他类
+```java
+package d2_modifier.zibao;  
+  
+/**  
+ * 同一包中其他类  
+ */  
+public class Test {  
+    //讲解权限修饰符的使用范围  
+ public static void main(String[] args) {  
+        Father f = new Father();  
+ f.method();//缺省包级权限  
+ f.protectedMethod();//包+其他包子类  
+ f.publicMethod();  
+  
+ }  
+  
+  
+}
+```
+
+3. 不同包的子类中, 注意访问protected方法要通过子类
+```java
+package d2_modifier;  
+  
+//继承其他包的类，也要先导包  
+import d2_modifier.zibao.Father;  
+  
+public class Son extends Father {  
+    public static void main(String[] args) {  
+        Father f = new Father();  
+//        f.protectedMethod();//报错， 不能通过父类实例访问  
+ f.publicMethod();  
+  
+ Son s = new Son();  
+ s.protectedMethod();//子类实例可以访问继承的protected方法  
+ s.publicMethod();  
+ }  
+}
+```
+
+4. 不同包的其他类
+```java
+package d2_modifier;  
+//调用其他包的类先导包  
+import d2_modifier.zibao.Father;  
+  
+/**  
+ * 其他包，无关类  
+ */  
+public class Test2 {  
+    public static void main(String[] args) {  
+        Father f = new Father();  
+ f.publicMethod();//其他包中无关类只能调用public  
+ }  
+}
+```
+
+学完权限修饰符需要具备如下能力
+- 能够识别别人定义的成员的访问范围。
+- 自己定义成员(方法，成员变量，构造器等)一般需要满足如下要求：
+	- 成员变量一般私有。
+	- 方法一般公开。
+	- 如果该成员只希望本类访问，使用private修饰。
+	- 如果该成员只希望本类，同一个包下的其他类和其他包的子类访问，使用protected修饰。
+
+
+<br/>
+<br/>
+
+<br/>
+<br/>
+
+# final关键字
+
+final的作用
+final关键字是最终的意思，可以修饰(类、方法、变量)
+
+
+1. 修饰类：表明该类是最终类，不能被继承。可能用于工具类
+![](attachments/Pasted%20image%2020220403182114.png)
+2. 修饰方法：表明该方法是最终方法，不能被重写。
+![](attachments/Pasted%20image%2020220403182537.png)
+3. 修饰变量：表示该变量第一次赋值后，不能再次被赋值（有且仅能被赋值一次）。（基本类型值不变，引用类型地址不变）
+
+final 修饰局部变量
+```java
+public class Test2 {  
+    //3. final修饰变量：表示该变量第一次赋值后，不能再次被赋值（有且仅能被赋值一次）。  
+ public static void main(String[] args) {  
+        // 变量： 1. 局部变量， 2.成员变量（静态+实例）  
+  
+ //1. final修饰局部变量  
+ final double pi = 3.14;  
+//        pi = 3.15;//二次赋值，报错  
+  
+ buy(0.8);  
+ }  
+  
+    public static void buy(final double discount){  
+//        discount = 0.1;//这里已经是第二次赋值了， 接形参的时候才是第一次  
+ }  
+}
+```
+
+final修饰成员变量
+```java
+public class Test3 {  
+    //final 修饰成员变量  
+ // 2. 修饰静态成员变量（public static final修饰的值也称为常量）  
+ public static final String name = "TOM";  
+ //3. 修饰实例成员变量（几乎不用）  
+ private final int age = 20;//必须赋值且只赋值一次，不赋值，报错  
+  
+ public static void main(String[] args) {  
+//        name = "改名卡";//报错  
+  
+ ///3.实例成员变量，要先创建对象  
+ Test3 t = new Test3();  
+//        t.age = 18;//报错  
+ }  
+  
+}
+```
+
+final修饰变量的注意
+
+- final修饰的变量是基本类型：那么变量存储的***数据值***不能发生改变。
+- final修饰的变量是引用类型：那么变量存储的***地址值***不能发生改变，但是地址指向的***对象内容是可以发生变化的***
+
+```java
+class Teacher{  
+    private String hobby;  
+  
+ public void setHobby(String hobby){  
+        this.hobby = hobby;  
+ }  
+    public String getHobby(){  
+        return hobby;  
+ }  
+    //有参构造器  
+ public Teacher(String hobby){  
+        this.hobby = hobby;  
+ }  
+}
+
+
+public static void main(String[] args) {  
+ //!!!!!!!!!!!  
+ //注意： final 修饰的引用类型的变量， 其地址值不可以改变， 但指向的对象内容可以改变  
+ final Teacher t2 = new Teacher("上课， 改作业");  
+//        t2 = null;//改变地址值，报错  
+ System.out.println(t2.getHobby());//上课， 改作业  
+ t2.setHobby("吃饭睡觉打豆豆");//对象的内容可以改变  
+ System.out.println(t2.getHobby());//吃饭睡觉打豆豆  
+  
+ }  
+  
+}
+```
